@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head><title>mixdown example - load asset</title></head>
+    <body>
+        <script src="mixdown.js"></script>
+        <script>
+            let mixdown = new Mixdown();
+
+            function unlock() {
+                mixdown.resume();
+
+                mixdown.loadAsset("twang", "./static/twang.wav");
+            }
+            
+            document.addEventListener("click", unlock);
+        </script>
+    </body>
+</html>
