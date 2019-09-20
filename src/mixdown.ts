@@ -67,6 +67,49 @@ class Mixdown {
     }
 
     play(playable : Playable) : Index | undefined {
+        switch (playable.kind) {
+            case "sample":
+                return this.playSample(playable);
+            case "sfx":
+                return this.playSfx(playable);
+            case "music":
+                return this.playMusic(playable);
+        }
+        return undefined;
+    }
+
+    playSample(sample : Sample) : Index | undefined {
+        const buffer = this.assetMap[sample.asset];
+        
+        if(!buffer) {
+            return undefined;
+        }
+
+        // todo: find a free voice
+
+        const ctx = this.context;
+
+        let source = ctx.createBufferSource();
+        source.buffer = buffer;
+
+        let balance = ctx.createStereoPanner();
+        source.connect(balance);
+
+        let gain = ctx.createGain();
+        balance.connect(gain);
+
+        gain.gain.setValueAtTime(sample.gain, ctx.currentTime);
+
+        // todo: we need to store the above in the voice and return a generational index to it
+
+        return undefined;
+    }
+
+    playSfx(sfx : Sfx) : Index | undefined {
+        return undefined;
+    }
+
+    playMusic(music : Music) : Index | undefined {
         return undefined;
     }
 
