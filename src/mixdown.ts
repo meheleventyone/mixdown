@@ -32,6 +32,17 @@ type IndexResult = "success" | "doesNotExist" | "oldGeneration";
 class Mixdown {
     context : AudioContext = new AudioContext();
     assetMap : Record<string, AudioBuffer> = {};
+    maxVoices : number;
+    slopSize : number;
+    masterGain : GainNode;
+
+    constructor(maxVoices : number = 32, slopSize : number = 4) {
+        this.maxVoices = maxVoices;
+        this.slopSize = 4;
+
+        this.masterGain = this.context.createGain()
+        this.masterGain.connect(this.context.destination);
+    }
 
     suspend() {
         if (this.context.state === "suspended") {
