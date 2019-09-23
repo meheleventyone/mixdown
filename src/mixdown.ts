@@ -1,17 +1,21 @@
 // A Web Audio based mixer for games.
+enum Priority {
+    Low = 0,
+    Medium,
+    High
+}
 
 interface Sample {
     kind : "sample";
     asset : string;
     gain : number;
-    startSample : number;
-    endSample : number;
+    priority : Priority;
 }
 
 interface Sfx {
     kind : "sfx";
     samples : [Sample];
-    priority : "high" | "medium" | "low";
+    priority : Priority; // sfx priority superceeds Sample priority
 }
 
 interface Music {
@@ -20,14 +24,83 @@ interface Music {
     gain : number;
 }
 
-interface Index {
+interface GenerationHandle {
     readonly index : number;
     readonly generation : number;
+}
+
+class GenerationalArray<T> {
+    generation : number[] = [];
+    data : (T | null)[] = [];
+    freeList : number[] = [];
+    noResize : boolean;
+
+    constructor(initialSize : number, noResize : boolean = true) {
+        this.noResize = noResize;
+        for (let i = 0; i < initialSize; ++i) {
+            this.generation[i] = 0;
+            this.data[i] = null;
+            this.freeList.push(i);
+        }
+    }
+
+    add(data : T) : GenerationHandle | undefined {
+        let index : number | undefined = -1;
+        if (this.freeList.length == 0) {
+            if (this.noResize) {
+                return undefined;
+            }
+            index = this.data.length;
+        } else {
+            index = this.freeList.pop();
+        }
+        index = index as number;
+        this.data[index] = data;
+        return { index : index, generation : this.generation[index] };
+    }
+
+    get(handle : GenerationHandle) : T | undefined {
+        if (handle.generation != this.generation[handle.index]) {
+            return undefined;
+        }
+
+        let index = handle.index;
+        if (this.data[index] == null) {
+            return undefined;
+        }
+
+        return this.data[index] as T;
+    }
+
+    remove(handle : GenerationHandle) {
+        if (handle.generation != this.generation[handle.index]) {
+            return undefined;
+        }
+        let index = handle.index;
+        this.generation[index] += 1;
+        this.data[index] = null;
+        this.freeList.push(index);
+    }
+
+    valid(handle : GenerationHandle) : boolean {
+        return handle.generation == this.generation[handle.index];
+    }
+
+    freeSlots() : number {
+        return this.freeList.length;
+    }
 }
 
 type Playable = Sample | Sfx | Music;
 
 type IndexResult = "success" | "doesNotExist" | "oldGeneration";
+
+interface Voice {
+    gain : GainNode;
+    balance : StereoPannerNode;
+    source : AudioBufferSourceNode;
+    priority : Priority;
+}
 
 class Mixdown {
     context : AudioContext = new AudioContext();
@@ -35,6 +108,7 @@ class Mixdown {
     maxVoices : number;
     slopSize : number;
     masterGain : GainNode;
+    voices : GenerationalArray<Voice>;
 
     constructor(maxVoices : number = 32, slopSize : number = 4) {
         this.maxVoices = maxVoices;
@@ -42,6 +116,8 @@ class Mixdown {
 
         this.masterGain = this.context.createGain()
         this.masterGain.connect(this.context.destination);
+
+        this.voices = new GenerationalArray(maxVoices);
     }
 
     suspend() {
@@ -66,7 +142,7 @@ class Mixdown {
         
     }
 
-    play(playable : Playable) : Index | undefined {
+    play(playable : Playable) : GenerationHandle | undefined {
         switch (playable.kind) {
             case "sample":
                 return this.playSample(playable);
@@ -78,14 +154,17 @@ class Mixdown {
         return undefined;
     }
 
-    playSample(sample : Sample) : Index | undefined {
+    playSample(sample : Sample) : GenerationHandle | undefined {
         const buffer = this.assetMap[sample.asset];
         
-        if(!buffer) {
+        if (!buffer) {
             return undefined;
         }
 
-        // todo: find a free voice
+        if (this.voices.freeSlots() == 0) {
+            // todo priority search
+            return undefined;
+        }
 
         const ctx = this.context;
 
@@ -99,37 +178,57 @@ class Mixdown {
         balance.connect(gain);
 
         gain.gain.setValueAtTime(sample.gain, ctx.currentTime);
+        gain.connect(this.masterGain);
 
-        // todo: we need to store the above in the voice and return a generational index to it
+        source.start();
 
+        let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sample.priority});
+
+        if (handle) {
+            source.onended = () => { this.ended(handle as GenerationHandle); }
+        }
+        return handle;
+    }
+
+    private ended(handle : GenerationHandle) {
+        let voice = this.voices.get(handle);
+
+        if (!voice) {
+            return;
+        }
+
+        voice.source.disconnect();
+        voice.source.buffer = null;
+        voice.gain.disconnect();
+        voice.balance.disconnect();
+        this.voices.remove(handle);
+    }
+
+    playSfx(sfx : Sfx) : GenerationHandle | undefined {
         return undefined;
     }
 
-    playSfx(sfx : Sfx) : Index | undefined {
+    playMusic(music : Music) : GenerationHandle | undefined {
         return undefined;
     }
 
-    playMusic(music : Music) : Index | undefined {
-        return undefined;
-    }
-
-    stop(index : Index) : IndexResult {
+    stop(index : GenerationHandle) : IndexResult {
         return "doesNotExist";
     }
 
-    fadeIn(index : Index, value : number, duration : number) : IndexResult {
+    fadeIn(index : GenerationHandle, value : number, duration : number) : IndexResult {
         return "doesNotExist";
     }
 
-    fadeOut(index : Index, value : number, duration : number) : IndexResult {
+    fadeOut(index : GenerationHandle, value : number, duration : number) : IndexResult {
         return "doesNotExist";
     }
 
-    gain(index : Index, value : number) : IndexResult {
+    gain(index : GenerationHandle, value : number) : IndexResult {
         return "doesNotExist";
     }
 
-    balance(index : Index, value : number) : IndexResult {
+    balance(index : GenerationHandle, value : number) : IndexResult {
         return "doesNotExist";
     }
 
