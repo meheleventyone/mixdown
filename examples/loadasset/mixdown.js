@@ -6,35 +6,26 @@ var Priority;
     Priority[Priority["Medium"] = 1] = "Medium";
     Priority[Priority["High"] = 2] = "High";
 })(Priority || (Priority = {}));
-var GenerationalArray = /** @class */ (function () {
-    function GenerationalArray(initialSize, noResize) {
-        if (noResize === void 0) { noResize = true; }
+var GenerationalArena = /** @class */ (function () {
+    function GenerationalArena(size) {
         this.generation = [];
         this.data = [];
         this.freeList = [];
-        this.noResize = noResize;
-        for (var i = 0; i < initialSize; ++i) {
+        for (var i = 0; i < size; ++i) {
             this.generation[i] = 0;
             this.data[i] = null;
             this.freeList.push(i);
         }
     }
-    GenerationalArray.prototype.add = function (data) {
-        var index = -1;
+    GenerationalArena.prototype.add = function (data) {
         if (this.freeList.length == 0) {
-            if (this.noResize) {
-                return undefined;
-            }
-            index = this.data.length;
+            return undefined;
         }
-        else {
-            index = this.freeList.pop();
-        }
-        index = index;
+        var index = this.freeList.pop();
         this.data[index] = data;
         return { index: index, generation: this.generation[index] };
     };
-    GenerationalArray.prototype.get = function (handle) {
+    GenerationalArena.prototype.get = function (handle) {
         if (handle.generation != this.generation[handle.index]) {
             return undefined;
         }
@@ -44,7 +35,7 @@ var GenerationalArray = /** @class */ (function () {
         }
         return this.data[index];
     };
-    GenerationalArray.prototype.remove = function (handle) {
+    GenerationalArena.prototype.remove = function (handle) {
         if (handle.generation != this.generation[handle.index]) {
             return undefined;
         }
@@ -53,13 +44,13 @@ var GenerationalArray = /** @class */ (function () {
         this.data[index] = null;
         this.freeList.push(index);
     };
-    GenerationalArray.prototype.valid = function (handle) {
+    GenerationalArena.prototype.valid = function (handle) {
         return handle.generation == this.generation[handle.index];
     };
-    GenerationalArray.prototype.freeSlots = function () {
+    GenerationalArena.prototype.freeSlots = function () {
         return this.freeList.length;
     };
-    return GenerationalArray;
+    return GenerationalArena;
 }());
 var Mixdown = /** @class */ (function () {
     function Mixdown(maxVoices, slopSize) {
@@ -71,7 +62,7 @@ var Mixdown = /** @class */ (function () {
         this.slopSize = 4;
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
-        this.voices = new GenerationalArray(maxVoices);
+        this.voices = new GenerationalArena(maxVoices);
     }
     Mixdown.prototype.suspend = function () {
         if (this.context.state === "suspended") {

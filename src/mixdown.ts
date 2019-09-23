@@ -29,15 +29,13 @@ interface GenerationHandle {
     readonly generation : number;
 }
 
-class GenerationalArray<T> {
+class GenerationalArena<T> {
     generation : number[] = [];
     data : (T | null)[] = [];
     freeList : number[] = [];
-    noResize : boolean;
 
-    constructor(initialSize : number, noResize : boolean = true) {
-        this.noResize = noResize;
-        for (let i = 0; i < initialSize; ++i) {
+    constructor(size : number) {
+        for (let i = 0; i < size; ++i) {
             this.generation[i] = 0;
             this.data[i] = null;
             this.freeList.push(i);
@@ -45,16 +43,11 @@ class GenerationalArray<T> {
     }
 
     add(data : T) : GenerationHandle | undefined {
-        let index : number | undefined = -1;
         if (this.freeList.length == 0) {
-            if (this.noResize) {
-                return undefined;
-            }
-            index = this.data.length;
-        } else {
-            index = this.freeList.pop();
+            return undefined;
         }
-        index = index as number;
+
+        let index = this.freeList.pop() as number;
         this.data[index] = data;
         return { index : index, generation : this.generation[index] };
     }
@@ -108,7 +101,7 @@ class Mixdown {
     maxVoices : number;
     slopSize : number;
     masterGain : GainNode;
-    voices : GenerationalArray<Voice>;
+    voices : GenerationalArena<Voice>;
 
     constructor(maxVoices : number = 32, slopSize : number = 4) {
         this.maxVoices = maxVoices;
@@ -117,7 +110,7 @@ class Mixdown {
         this.masterGain = this.context.createGain()
         this.masterGain.connect(this.context.destination);
 
-        this.voices = new GenerationalArray(maxVoices);
+        this.voices = new GenerationalArena(maxVoices);
     }
 
     suspend() {
