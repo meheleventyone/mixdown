@@ -5,11 +5,11 @@
         <script src="mixdown.js"></script>
         <script>
             let mixdown = new Mixdown();
+            mixdown.loadAsset("twang", "./static/twang.wav");
 
             function unlock() {
                 mixdown.resume();
-
-                mixdown.loadAsset("twang", "./static/twang.wav");
+                mixdown.playSample({kind:"sample", asset:"twang", gain:1, priority:1});
             }
             
             document.addEventListener("click", unlock);
