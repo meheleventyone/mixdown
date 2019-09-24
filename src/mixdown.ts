@@ -86,8 +86,11 @@ class GenerationalArena<T> {
 
 type Playable = Sample | Sfx | Music;
 
-// todo: make an enum
-type IndexResult = "success" | "doesNotExist" | "oldGeneration";
+enum IndexResult {
+    SUCCESS = 0,
+    DOES_NOT_EXIST,
+    BAD_GENERATION,
+}
 
 interface Voice {
     gain : GainNode;
@@ -207,23 +210,23 @@ class Mixdown {
     }
 
     stop(index : GenerationHandle) : IndexResult {
-        return "doesNotExist";
+        return IndexResult.DOES_NOT_EXIST;
     }
 
     fadeIn(index : GenerationHandle, value : number, duration : number) : IndexResult {
-        return "doesNotExist";
+        return IndexResult.DOES_NOT_EXIST;
     }
 
     fadeOut(index : GenerationHandle, value : number, duration : number) : IndexResult {
-        return "doesNotExist";
+        return IndexResult.DOES_NOT_EXIST;
     }
 
     gain(index : GenerationHandle, value : number) : IndexResult {
-        return "doesNotExist";
+        return IndexResult.DOES_NOT_EXIST;
     }
 
     balance(index : GenerationHandle, value : number) : IndexResult {
-        return "doesNotExist";
+        return IndexResult.DOES_NOT_EXIST;
     }
 
     loadAsset(name : string, path : string) {
