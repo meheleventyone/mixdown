@@ -86,7 +86,7 @@ class GenerationalArena<T> {
 
 type Playable = Sample | Sfx | Music;
 
-enum IndexResult {
+enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST,
     BAD_GENERATION,
@@ -209,24 +209,24 @@ class Mixdown {
         return undefined;
     }
 
-    stop(index : GenerationHandle) : IndexResult {
-        return IndexResult.DOES_NOT_EXIST;
+    stop(index : GenerationHandle) : OperationResult {
+        return OperationResult.DOES_NOT_EXIST;
     }
 
-    fadeIn(index : GenerationHandle, value : number, duration : number) : IndexResult {
-        return IndexResult.DOES_NOT_EXIST;
+    fadeIn(index : GenerationHandle, value : number, duration : number) : OperationResult {
+        return OperationResult.DOES_NOT_EXIST;
     }
 
-    fadeOut(index : GenerationHandle, value : number, duration : number) : IndexResult {
-        return IndexResult.DOES_NOT_EXIST;
+    fadeOut(index : GenerationHandle, value : number, duration : number) : OperationResult {
+        return OperationResult.DOES_NOT_EXIST;
     }
 
-    gain(index : GenerationHandle, value : number) : IndexResult {
-        return IndexResult.DOES_NOT_EXIST;
+    gain(index : GenerationHandle, value : number) : OperationResult {
+        return OperationResult.DOES_NOT_EXIST;
     }
 
-    balance(index : GenerationHandle, value : number) : IndexResult {
-        return IndexResult.DOES_NOT_EXIST;
+    balance(index : GenerationHandle, value : number) : OperationResult {
+        return OperationResult.DOES_NOT_EXIST;
     }
 
     loadAsset(name : string, path : string) {
