@@ -43,7 +43,7 @@ class GenerationalArena<T> {
     }
 
     add(data : T) : GenerationHandle | undefined {
-        if (this.freeList.length == 0) {
+        if (this.freeList.length === 0) {
             return undefined;
         }
 
@@ -53,12 +53,12 @@ class GenerationalArena<T> {
     }
 
     get(handle : GenerationHandle) : T | undefined {
-        if (handle.generation != this.generation[handle.index]) {
+        if (handle.generation !== this.generation[handle.index]) {
             return undefined;
         }
 
         let index = handle.index;
-        if (this.data[index] == null) {
+        if (this.data[index] === null) {
             return undefined;
         }
 
@@ -66,7 +66,7 @@ class GenerationalArena<T> {
     }
 
     remove(handle : GenerationHandle) {
-        if (handle.generation != this.generation[handle.index]) {
+        if (handle.generation !== this.generation[handle.index]) {
             return undefined;
         }
         let index = handle.index;
@@ -76,7 +76,7 @@ class GenerationalArena<T> {
     }
 
     valid(handle : GenerationHandle) : boolean {
-        return handle.generation == this.generation[handle.index];
+        return handle.generation === this.generation[handle.index];
     }
 
     freeSlots() : number {
@@ -86,6 +86,7 @@ class GenerationalArena<T> {
 
 type Playable = Sample | Sfx | Music;
 
+// todo: make an enum
 type IndexResult = "success" | "doesNotExist" | "oldGeneration";
 
 interface Voice {
@@ -154,7 +155,7 @@ class Mixdown {
             return undefined;
         }
 
-        if (this.voices.freeSlots() == 0) {
+        if (this.voices.freeSlots() === 0) {
             // todo priority search
             return undefined;
         }
@@ -230,7 +231,8 @@ class Mixdown {
         // todo: return promise from this to cover user callbacks?
         // todo: xmlhttprequest for backwards compat?
 
-        fetch(path).then(response => response.arrayBuffer())
+        fetch(path)
+        .then(response => response.arrayBuffer())
         .then(data => this.context.decodeAudioData(data))
         .then(buffer => this.assetMap[name] = buffer)
         .catch(error => console.error(error));
