@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head><title>mixdown example - play music</title></head>
+    <body>
+        <script src="mixdown.js"></script>
+        <script>
+            let mixdown = new Mixdown();
+
+            function unlock() {
+                mixdown.resume();
+                mixdown.playMusic({kind:"music", source:"./static/paradise.mp3", gain:1});
+            }
+            
+            document.addEventListener("click", unlock);
+        </script>
+    </body>
+</html>
