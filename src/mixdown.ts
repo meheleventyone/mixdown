@@ -5,22 +5,22 @@ enum Priority {
     High
 }
 
-interface Sample {
-    kind : "sample";
+interface Sound {
+    kind : "sound";
     asset : string;
     gain : number;
     priority : Priority;
 }
 
-interface Sfx {
-    kind : "sfx";
-    samples : [Sample];
+interface CompoundSound {
+    kind : "compound";
+    samples : [Sound];
     priority : Priority; // sfx priority superceeds Sample priority
 }
 
 interface Music {
     kind : "music";
-    asset : string;
+    source : string;
     gain : number;
 }
 
@@ -79,12 +79,16 @@ class GenerationalArena<T> {
         return handle.generation === this.generation[handle.index];
     }
 
-    freeSlots() : number {
+    numFreeSlots() : number {
         return this.freeList.length;
+    }
+
+    numUsedSlots() : number {
+        return this.data.length - this.freeList.length;
     }
 }
 
-type Playable = Sample | Sfx | Music;
+type Playable = Sound | CompoundSound | Music;
 
 enum OperationResult {
     SUCCESS = 0,
@@ -99,22 +103,37 @@ interface Voice {
     priority : Priority;
 }
 
+interface Stream {
+    gain: GainNode;
+    balance: StereoPannerNode;
+    source: MediaElementAudioSourceNode;
+}
+
+type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
+type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
+type CompoundGenerationHandle = {kind : "compound"} & GenerationHandle;
+
 class Mixdown {
     context : AudioContext = new AudioContext();
     assetMap : Record<string, AudioBuffer> = {};
-    maxVoices : number;
+    maxSounds : number;
     slopSize : number;
     masterGain : GainNode;
     voices : GenerationalArena<Voice>;
+    streams : GenerationalArena<Stream>;
 
-    constructor(maxVoices : number = 32, slopSize : number = 4) {
-        this.maxVoices = maxVoices;
+    constructor(maxSounds : number = 32, maxStreams = 2, slopSize : number = 4) {
+        this.maxSounds = maxSounds;
         this.slopSize = 4;
 
         this.masterGain = this.context.createGain()
         this.masterGain.connect(this.context.destination);
 
-        this.voices = new GenerationalArena(maxVoices);
+        // technically we'll have more playing power than maxSounds would
+        // suggest but will consider the voices and streams a union and never
+        // exceed maxSounds things playing together
+        this.voices = new GenerationalArena(maxSounds);
+        this.streams = new GenerationalArena(maxStreams);
     }
 
     suspend() {
@@ -122,7 +141,7 @@ class Mixdown {
             return;
         }
 
-        // todo: remove all current nodes
+        // todo: kill active sounds
 
         this.context.suspend().then(this.rebuild);
     }
@@ -139,26 +158,26 @@ class Mixdown {
         
     }
 
-    play(playable : Playable) : GenerationHandle | undefined {
+    play(playable : Playable) : VoiceGenerationHandle | StreamGenerationHandle | CompoundGenerationHandle | undefined {
         switch (playable.kind) {
-            case "sample":
+            case "sound":
                 return this.playSample(playable);
-            case "sfx":
-                return this.playSfx(playable);
+            case "compound":
+                return this.playCompoundSound(playable);
             case "music":
                 return this.playMusic(playable);
         }
         return undefined;
     }
 
-    playSample(sample : Sample) : GenerationHandle | undefined {
+    playSample(sample : Sample) : VoiceGenerationHandle | undefined {
         const buffer = this.assetMap[sample.asset];
         
         if (!buffer) {
             return undefined;
         }
 
-        if (this.voices.freeSlots() === 0) {
+        if (this.numFreeSlots() <= 0) {
             // todo priority search
             return undefined;
         }
@@ -181,32 +200,51 @@ class Mixdown {
 
         let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sample.priority});
 
-        if (handle) {
-            source.onended = () => { this.ended(handle as GenerationHandle); }
-        }
-        return handle;
-    }
-
-    private ended(handle : GenerationHandle) {
-        let voice = this.voices.get(handle);
-
-        if (!voice) {
-            return;
+        if (!handle) {
+            return undefined;
         }
 
-        voice.source.disconnect();
-        voice.source.buffer = null;
-        voice.gain.disconnect();
-        voice.balance.disconnect();
-        this.voices.remove(handle);
+        let voiceHandle : VoiceGenerationHandle = { kind : "voice", index : handle.index, generation : handle.generation};
+        source.onended = () => { this.voiceEnded(voiceHandle); }
+
+        return voiceHandle;
     }
 
-    playSfx(sfx : Sfx) : GenerationHandle | undefined {
+    playCompoundSound(sound : CompoundSound) : CompoundGenerationHandle | undefined {
         return undefined;
     }
 
-    playMusic(music : Music) : GenerationHandle | undefined {
-        return undefined;
+    playMusic(music : Music) : StreamGenerationHandle | undefined {
+        if (this.numFreeSlots() <= 0 || this.streams.numFreeSlots() === 0) {
+            // todo priority search
+            return undefined;
+        }
+        const audio = new Audio(music.source);
+        audio.autoplay = true;
+        audio.loop = true;
+
+        const ctx = this.context;
+
+        let source = ctx.createMediaElementSource(audio);
+
+        let balance = ctx.createStereoPanner();
+        source.connect(balance);
+
+        let gain = ctx.createGain();
+        balance.connect(gain);
+
+        gain.gain.setValueAtTime(music.gain, ctx.currentTime);
+        gain.connect(this.masterGain);
+
+        let handle = this.streams.add({gain : gain, balance : balance, source : source});
+
+        if (!handle) {
+            return undefined;
+        }
+
+        let streamHandle : StreamGenerationHandle = { kind : "stream", index : handle.index, generation : handle.generation};
+
+        return streamHandle;
     }
 
     stop(index : GenerationHandle) : OperationResult {
@@ -239,5 +277,23 @@ class Mixdown {
         .then(data => this.context.decodeAudioData(data))
         .then(buffer => this.assetMap[name] = buffer)
         .catch(error => console.error(error));
+    }
+
+    numFreeSlots() : number {
+        return this.voices.numFreeSlots() - this.streams.numUsedSlots();
+    }
+
+    private voiceEnded(handle : VoiceGenerationHandle) {
+        let voice = this.voices.get(handle);
+
+        if (!voice) {
+            return;
+        }
+
+        voice.source.disconnect();
+        voice.source.buffer = null;
+        voice.gain.disconnect();
+        voice.balance.disconnect();
+        this.voices.remove(handle);
     }
 }
