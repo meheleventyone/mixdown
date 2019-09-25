@@ -12,12 +12,6 @@ interface Sound {
     priority : Priority;
 }
 
-interface CompoundSound {
-    kind : "compound";
-    samples : [Sound];
-    priority : Priority; // sfx priority superceeds Sample priority
-}
-
 interface Music {
     kind : "music";
     source : string;
@@ -88,7 +82,7 @@ class GenerationalArena<T> {
     }
 }
 
-type Playable = Sound | CompoundSound | Music;
+type Playable = Sound | Music;
 
 enum OperationResult {
     SUCCESS = 0,
@@ -111,7 +105,6 @@ interface Stream {
 
 type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
 type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
-type CompoundGenerationHandle = {kind : "compound"} & GenerationHandle;
 
 class Mixdown {
     context : AudioContext = new AudioContext();
@@ -158,19 +151,17 @@ class Mixdown {
         
     }
 
-    play(playable : Playable) : VoiceGenerationHandle | StreamGenerationHandle | CompoundGenerationHandle | undefined {
+    play(playable : Playable) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
         switch (playable.kind) {
             case "sound":
-                return this.playSample(playable);
-            case "compound":
-                return this.playCompoundSound(playable);
+                return this.playSound(playable);
             case "music":
                 return this.playMusic(playable);
         }
         return undefined;
     }
 
-    playSample(sample : Sample) : VoiceGenerationHandle | undefined {
+    playSound(sample : Sound) : VoiceGenerationHandle | undefined {
         const buffer = this.assetMap[sample.asset];
         
         if (!buffer) {
@@ -208,10 +199,6 @@ class Mixdown {
         source.onended = () => { this.voiceEnded(voiceHandle); }
 
         return voiceHandle;
-    }
-
-    playCompoundSound(sound : CompoundSound) : CompoundGenerationHandle | undefined {
-        return undefined;
     }
 
     playMusic(music : Music) : StreamGenerationHandle | undefined {
