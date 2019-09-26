@@ -23,6 +23,9 @@ interface GenerationHandle {
     readonly generation : number;
 }
 
+// todo: maybe let this take a second type constrained to being something that matches
+// GenerationHandle so users can define the return type if they don't want to wrap the 
+// arena
 class GenerationalArena<T> {
     generation : number[] = [];
     data : (T | null)[] = [];
@@ -57,6 +60,21 @@ class GenerationalArena<T> {
         }
 
         return this.data[index] as T;
+    }
+
+    findFirst(test : (data : T) => boolean) : T | undefined {
+        for (let i = 0; i < this.data.length; ++i) {
+            let data = this.data[i];
+            if (data === null) {
+                continue;
+            }
+            
+            if (!test(data)) {
+                continue;
+            }
+
+            return data;
+        }
     }
 
     remove(handle : GenerationHandle) {
@@ -114,10 +132,11 @@ class Mixdown {
     masterGain : GainNode;
     voices : GenerationalArena<Voice>;
     streams : GenerationalArena<Stream>;
+    removalFadeDuration : number = 0.2;
 
     constructor(maxSounds : number = 32, maxStreams = 2, slopSize : number = 4) {
         this.maxSounds = maxSounds;
-        this.slopSize = 4;
+        this.slopSize = slopSize;
 
         this.masterGain = this.context.createGain()
         this.masterGain.connect(this.context.destination);
@@ -161,19 +180,38 @@ class Mixdown {
         return undefined;
     }
 
-    playSound(sample : Sound) : VoiceGenerationHandle | undefined {
-        const buffer = this.assetMap[sample.asset];
+    playSound(sound : Sound) : VoiceGenerationHandle | undefined {
+        const buffer = this.assetMap[sound.asset];
         
         if (!buffer) {
             return undefined;
         }
 
-        if (this.numFreeSlots() <= 0) {
-            // todo priority search
+        // if there is no space we cannot play this sound
+        // log a warning and continue
+        const freeSlots = this.numFreeSlots();
+        if (freeSlots <= 0) {
+            console.warn("mixdown had no free slots to play sound.");
             return undefined;
         }
 
         const ctx = this.context;
+        if (freeSlots <= this.slopSize) {
+            // we are going to nicely evict one of the currently playing sounds at
+            // a lower priority, music is counted as never to be removed
+            // right now we're just going to evict the first thing we come across
+            // in the future we might want this to be more heuristic based 
+            // (e.g. evict the quietest sound with the lowest priority)
+            let voice = this.voices.findFirst((voice) => { return voice.priority < sound.priority; });
+
+            if (voice === undefined) {
+                console.warn("mixdown used an element of slop without being able to evict");
+            } else {
+                // fade out then remove sound pointed too by handle
+                voice.gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + this.removalFadeDuration);
+                voice.source.stop(ctx.currentTime + this.removalFadeDuration);
+            }
+        }
 
         let source = ctx.createBufferSource();
         source.buffer = buffer;
@@ -184,12 +222,12 @@ class Mixdown {
         let gain = ctx.createGain();
         balance.connect(gain);
 
-        gain.gain.setValueAtTime(sample.gain, ctx.currentTime);
+        gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
         gain.connect(this.masterGain);
 
         source.start();
 
-        let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sample.priority});
+        let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sound.priority});
 
         if (!handle) {
             return undefined;
