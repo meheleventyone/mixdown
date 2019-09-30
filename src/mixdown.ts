@@ -9,6 +9,7 @@ interface Sound {
     kind : "sound";
     asset : string;
     gain : number;
+    loop : boolean;
     priority : Priority;
 }
 
@@ -105,20 +106,19 @@ type Playable = Sound | Music;
 enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST,
-    BAD_GENERATION,
 }
 
 interface Voice {
-    gain : GainNode;
-    balance : StereoPannerNode;
-    source : AudioBufferSourceNode;
+    gain : GainNode | null;
+    balance : StereoPannerNode | null;
+    source : AudioBufferSourceNode | null;
     priority : Priority;
 }
 
 interface Stream {
-    gain: GainNode;
-    balance: StereoPannerNode;
-    source: MediaElementAudioSourceNode;
+    gain: GainNode | null;
+    balance: StereoPannerNode | null;
+    source: MediaElementAudioSourceNode | null;
 }
 
 type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
@@ -204,17 +204,18 @@ class Mixdown {
             // (e.g. evict the quietest sound with the lowest priority)
             let voice = this.voices.findFirst((voice) => { return voice.priority < sound.priority; });
 
-            if (voice === undefined) {
+            if (voice === undefined || !voice.gain || !voice.source) {
                 console.warn("mixdown used an element of slop without being able to evict");
             } else {
                 // fade out then remove sound pointed too by handle
                 voice.gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + this.removalFadeDuration);
-                voice.source.stop(ctx.currentTime + this.removalFadeDuration);
+                voice.source.stop(ctx.currentTime + this.removalFadeDuration); // this triggers removal through callback
             }
         }
 
         let source = ctx.createBufferSource();
         source.buffer = buffer;
+        source.loop = sound.loop;
 
         let balance = ctx.createStereoPanner();
         source.connect(balance);
@@ -272,8 +273,48 @@ class Mixdown {
         return streamHandle;
     }
 
-    stop(index : GenerationHandle) : OperationResult {
+    stop(index : VoiceGenerationHandle | StreamGenerationHandle) : OperationResult {
+        if (index.kind === "voice") {
+            return this.stopSound(index);
+        } else {
+            return this.stopMusic(index);
+        }
+
         return OperationResult.DOES_NOT_EXIST;
+    }
+
+    stopSound(index : VoiceGenerationHandle) : OperationResult {
+        const voice = this.voices.get(index);
+
+        if (!voice) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        if (!voice.source) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        voice.source.stop();
+        return OperationResult.SUCCESS;
+    }
+
+    stopMusic(index : StreamGenerationHandle) : OperationResult {
+        const stream = this.streams.get(index);
+
+        if (!stream || !stream.source || !stream.gain || !stream.balance) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        stream.source.disconnect();
+        stream.source = null;
+
+        stream.gain.disconnect();
+        stream.gain = null;
+    
+        stream.balance.disconnect();
+        stream.balance = null;
+
+        return OperationResult.SUCCESS;
     }
 
     fadeIn(index : GenerationHandle, value : number, duration : number) : OperationResult {
@@ -284,12 +325,84 @@ class Mixdown {
         return OperationResult.DOES_NOT_EXIST;
     }
 
-    gain(index : GenerationHandle, value : number) : OperationResult {
-        return OperationResult.DOES_NOT_EXIST;
+    gain(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
+        let element : Voice | Stream | undefined;
+        if (index.kind === "voice") {
+            element = this.voices.get(index);
+        } else {
+            element = this.streams.get(index);
+        }
+
+        if (!element || !element.gain) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        element.gain.gain.setValueAtTime(value, this.context.currentTime);
+        return OperationResult.SUCCESS;
     }
 
-    balance(index : GenerationHandle, value : number) : OperationResult {
-        return OperationResult.DOES_NOT_EXIST;
+    gainSound(index : VoiceGenerationHandle, value : number) : OperationResult {
+        const voice = this.voices.get(index);
+
+        if (!voice || !voice.gain) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        voice.gain.gain.setValueAtTime(value, this.context.currentTime);
+
+        return OperationResult.SUCCESS;
+    }
+
+    gainMusic(index : StreamGenerationHandle, value : number) : OperationResult {
+        const stream = this.streams.get(index);
+
+        if (!stream || !stream.gain) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        stream.gain.gain.setValueAtTime(value, this.context.currentTime);
+
+        return OperationResult.SUCCESS;
+    }
+
+    balance(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
+        let element : Voice | Stream | undefined;
+        if (index.kind === "voice") {
+            element = this.voices.get(index);
+        } else {
+            element = this.streams.get(index);
+        }
+
+        if (!element || !element.balance) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        element.balance.pan.setValueAtTime(value, this.context.currentTime);
+        return OperationResult.SUCCESS;
+    }
+
+    balanceSound(index : VoiceGenerationHandle, value : number) : OperationResult {
+        const voice = this.voices.get(index);
+
+        if (!voice || !voice.balance) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        voice.balance.pan.setValueAtTime(value, this.context.currentTime);
+
+        return OperationResult.SUCCESS;
+    }
+
+    balanceMusic(index : StreamGenerationHandle, value : number) : OperationResult {
+        const stream = this.streams.get(index);
+
+        if (!stream || !stream.balance) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        stream.balance.pan.setValueAtTime(value, this.context.currentTime);
+
+        return OperationResult.SUCCESS;
     }
 
     loadAsset(name : string, path : string) {
@@ -311,14 +424,20 @@ class Mixdown {
     private voiceEnded(handle : VoiceGenerationHandle) {
         let voice = this.voices.get(handle);
 
-        if (!voice) {
+        if (!voice || !voice.source || !voice.gain || !voice.balance) {
             return;
         }
 
         voice.source.disconnect();
         voice.source.buffer = null;
+        voice.source = null;
+
         voice.gain.disconnect();
+        voice.gain = null;
+    
         voice.balance.disconnect();
+        voice.balance = null;
+        
         this.voices.remove(handle);
     }
 }
