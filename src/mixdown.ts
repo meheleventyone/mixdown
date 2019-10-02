@@ -109,16 +109,16 @@ enum OperationResult {
 }
 
 interface Voice {
-    gain : GainNode | null;
-    balance : StereoPannerNode | null;
-    source : AudioBufferSourceNode | null;
+    gain : GainNode;
+    balance : StereoPannerNode;
+    source : AudioBufferSourceNode;
     priority : Priority;
 }
 
 interface Stream {
-    gain: GainNode | null;
-    balance: StereoPannerNode | null;
-    source: MediaElementAudioSourceNode | null;
+    gain: GainNode;
+    balance: StereoPannerNode;
+    source: MediaElementAudioSourceNode;
 }
 
 type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
@@ -306,13 +306,10 @@ class Mixdown {
         }
 
         stream.source.disconnect();
-        stream.source = null;
-
         stream.gain.disconnect();
-        stream.gain = null;
-    
         stream.balance.disconnect();
-        stream.balance = null;
+        
+        this.streams.remove(index);
 
         return OperationResult.SUCCESS;
     }
@@ -430,13 +427,10 @@ class Mixdown {
 
         voice.source.disconnect();
         voice.source.buffer = null;
-        voice.source = null;
 
         voice.gain.disconnect();
-        voice.gain = null;
     
         voice.balance.disconnect();
-        voice.balance = null;
         
         this.voices.remove(handle);
     }
