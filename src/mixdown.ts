@@ -327,7 +327,7 @@ class Mixdown {
     }
 
     stopLoop(index : VoiceGenerationHandle | StreamGenerationHandle) : OperationResult {
-
+        return OperationResult.DOES_NOT_EXIST;
     }
 
     fadeTo(index : VoiceGenerationHandle | StreamGenerationHandle, value : number, duration : number) : OperationResult {
