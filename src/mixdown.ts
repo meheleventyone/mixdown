@@ -119,6 +119,7 @@ interface Stream {
     gain: GainNode;
     balance: StereoPannerNode;
     source: MediaElementAudioSourceNode;
+    audio: HTMLAudioElement;
 }
 
 type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
@@ -155,7 +156,7 @@ class Mixdown {
 
         // todo: kill active sounds
 
-        this.context.suspend().then(this.rebuild);
+        this.context.suspend();
     }
 
     resume() {
@@ -164,10 +165,6 @@ class Mixdown {
         }
 
         this.context.resume();
-    }
-
-    rebuild() {
-        
     }
 
     play(playable : Playable) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
@@ -241,10 +238,12 @@ class Mixdown {
     }
 
     playMusic(music : Music) : StreamGenerationHandle | undefined {
-        if (this.numFreeSlots() <= 0 || this.streams.numFreeSlots() === 0) {
-            // todo priority search
+        if (this.streams.numFreeSlots() === 0) {
             return undefined;
         }
+
+        // todo evict an sfx is bank is fulls
+
         const audio = new Audio(music.source);
         audio.autoplay = true;
         audio.loop = true;
@@ -262,7 +261,7 @@ class Mixdown {
         gain.gain.setValueAtTime(music.gain, ctx.currentTime);
         gain.connect(this.masterGain);
 
-        let handle = this.streams.add({gain : gain, balance : balance, source : source});
+        let handle = this.streams.add({gain : gain, balance : balance, source : source, audio: audio});
 
         if (!handle) {
             return undefined;
@@ -279,8 +278,6 @@ class Mixdown {
         } else {
             return this.stopMusic(index);
         }
-
-        return OperationResult.DOES_NOT_EXIST;
     }
 
     stopSound(index : VoiceGenerationHandle) : OperationResult {
@@ -308,18 +305,49 @@ class Mixdown {
         stream.source.disconnect();
         stream.gain.disconnect();
         stream.balance.disconnect();
+        stream.audio.pause();
         
         this.streams.remove(index);
 
         return OperationResult.SUCCESS;
     }
 
-    fadeIn(index : GenerationHandle, value : number, duration : number) : OperationResult {
-        return OperationResult.DOES_NOT_EXIST;
+    loop(index : VoiceGenerationHandle, start : number = 0, end : number = 0) : OperationResult {
+        let element = this.voices.get(index);
+
+        if (!element) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        const source = element.source;
+        source.loop = true;
+        source.loopStart = start;
+        source.loopEnd = end;
+        return OperationResult.SUCCESS;
     }
 
-    fadeOut(index : GenerationHandle, value : number, duration : number) : OperationResult {
-        return OperationResult.DOES_NOT_EXIST;
+    stopLoop(index : VoiceGenerationHandle | StreamGenerationHandle) : OperationResult {
+
+    }
+
+    fadeTo(index : VoiceGenerationHandle | StreamGenerationHandle, value : number, duration : number) : OperationResult {
+        let element : Voice | Stream | undefined;
+        if (index.kind === "voice") {
+            element = this.voices.get(index);
+        } else {
+            element = this.streams.get(index);
+        }
+
+        if (!element) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        element.gain.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
+        return OperationResult.SUCCESS;
+    }
+
+    fadeOut(index : VoiceGenerationHandle | StreamGenerationHandle, duration : number) : OperationResult {
+        return this.fadeTo(index, 0.001, duration);
     }
 
     gain(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
@@ -338,30 +366,6 @@ class Mixdown {
         return OperationResult.SUCCESS;
     }
 
-    gainSound(index : VoiceGenerationHandle, value : number) : OperationResult {
-        const voice = this.voices.get(index);
-
-        if (!voice || !voice.gain) {
-            return OperationResult.DOES_NOT_EXIST;
-        }
-
-        voice.gain.gain.setValueAtTime(value, this.context.currentTime);
-
-        return OperationResult.SUCCESS;
-    }
-
-    gainMusic(index : StreamGenerationHandle, value : number) : OperationResult {
-        const stream = this.streams.get(index);
-
-        if (!stream || !stream.gain) {
-            return OperationResult.DOES_NOT_EXIST;
-        }
-
-        stream.gain.gain.setValueAtTime(value, this.context.currentTime);
-
-        return OperationResult.SUCCESS;
-    }
-
     balance(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
         let element : Voice | Stream | undefined;
         if (index.kind === "voice") {
@@ -375,30 +379,6 @@ class Mixdown {
         }
 
         element.balance.pan.setValueAtTime(value, this.context.currentTime);
-        return OperationResult.SUCCESS;
-    }
-
-    balanceSound(index : VoiceGenerationHandle, value : number) : OperationResult {
-        const voice = this.voices.get(index);
-
-        if (!voice || !voice.balance) {
-            return OperationResult.DOES_NOT_EXIST;
-        }
-
-        voice.balance.pan.setValueAtTime(value, this.context.currentTime);
-
-        return OperationResult.SUCCESS;
-    }
-
-    balanceMusic(index : StreamGenerationHandle, value : number) : OperationResult {
-        const stream = this.streams.get(index);
-
-        if (!stream || !stream.balance) {
-            return OperationResult.DOES_NOT_EXIST;
-        }
-
-        stream.balance.pan.setValueAtTime(value, this.context.currentTime);
-
         return OperationResult.SUCCESS;
     }
 
