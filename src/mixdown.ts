@@ -10,12 +10,18 @@ interface SoundLoop {
     end : number;
 }
 
+interface SoundClip {
+    start : number;
+    end : number;
+}
+
 interface Sound {
     kind : "sound";
+    priority : Priority;
     asset : string;
     gain : number;
     loop? : SoundLoop;
-    priority : Priority;
+    clip? : SoundClip;
 }
 
 interface Music {
@@ -233,7 +239,14 @@ class Mixdown {
         gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
         gain.connect(this.masterGain);
 
-        source.start();
+        let start = 0;
+        let duration = buffer.duration;
+        if (sound.clip) {
+            duration = Math.max(0, sound.clip.end - sound.clip.start);
+            start = sound.clip.start;
+        }
+        
+        source.start(0, start, duration);
 
         let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sound.priority});
 
