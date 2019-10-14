@@ -5,11 +5,16 @@ enum Priority {
     High
 }
 
+interface SoundLoop {
+    start : number;
+    end : number;
+}
+
 interface Sound {
     kind : "sound";
     asset : string;
     gain : number;
-    loop : boolean;
+    loop? : SoundLoop;
     priority : Priority;
 }
 
@@ -212,7 +217,12 @@ class Mixdown {
 
         let source = ctx.createBufferSource();
         source.buffer = buffer;
-        source.loop = sound.loop;
+
+        if (sound.loop) {
+            source.loop = true;
+            source.loopStart = sound.loop.start;
+            source.loopEnd = sound.loop.end;
+        }
 
         let balance = ctx.createStereoPanner();
         source.connect(balance);
@@ -326,8 +336,18 @@ class Mixdown {
         return OperationResult.SUCCESS;
     }
 
-    stopLoop(index : VoiceGenerationHandle | StreamGenerationHandle) : OperationResult {
-        return OperationResult.DOES_NOT_EXIST;
+    stopLoop(index : VoiceGenerationHandle) : OperationResult {
+        let element = this.voices.get(index);
+
+        if (!element) {
+            return OperationResult.DOES_NOT_EXIST;
+        }
+
+        const source = element.source;
+        source.loop = false;
+        source.loopStart = 0;
+        source.loopEnd = 0;
+        return OperationResult.SUCCESS;
     }
 
     fadeTo(index : VoiceGenerationHandle | StreamGenerationHandle, value : number, duration : number) : OperationResult {
