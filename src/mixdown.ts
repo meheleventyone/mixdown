@@ -205,20 +205,7 @@ class Mixdown {
 
         const ctx = this.context;
         if (freeSlots <= this.slopSize) {
-            // we are going to nicely evict one of the currently playing sounds at
-            // a lower priority, music is counted as never to be removed
-            // right now we're just going to evict the first thing we come across
-            // in the future we might want this to be more heuristic based 
-            // (e.g. evict the quietest sound with the lowest priority)
-            let voice = this.voices.findFirst((voice) => { return voice.priority < sound.priority; });
-
-            if (voice === undefined || !voice.gain || !voice.source) {
-                console.warn("mixdown used an element of slop without being able to evict");
-            } else {
-                // fade out then remove sound pointed too by handle
-                voice.gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + this.removalFadeDuration);
-                voice.source.stop(ctx.currentTime + this.removalFadeDuration); // this triggers removal through callback
-            }
+            this.evictVoice(sound.priority);
         }
 
         let source = ctx.createBufferSource();
@@ -245,7 +232,7 @@ class Mixdown {
             duration = Math.max(0, sound.clip.end - sound.clip.start);
             start = sound.clip.start;
         }
-        
+
         source.start(0, start, duration);
 
         let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sound.priority});
@@ -265,7 +252,16 @@ class Mixdown {
             return undefined;
         }
 
-        // todo evict an sfx is bank is fulls
+        // if there is no space we cannot play this music
+        // log a warning and continue
+        const freeSlots = this.numFreeSlots();
+        if (freeSlots <= 0) {
+            console.warn("mixdown had no free slots to play music.");
+            return undefined;
+        }
+
+        // we don't do eviction for music as the assumption is that we're changing tracks and music is highest priority
+        // and long lasting so we can afford to take up some slop and let sounds adjust accordingly
 
         const audio = new Audio(music.source);
         audio.autoplay = true;
@@ -446,5 +442,25 @@ class Mixdown {
         voice.balance.disconnect();
         
         this.voices.remove(handle);
+    }
+
+    private evictVoice(priority : number) : boolean {
+        // we are going to nicely evict one of the currently playing sounds at
+        // a lower priority, music is counted as never to be removed
+        // right now we're just going to evict the first thing we come across
+        // in the future we might want this to be more heuristic based 
+        // (e.g. evict the quietest sound with the lowest priority)
+        let voice = this.voices.findFirst((voice) => { return voice.priority < priority; });
+
+        if (voice === undefined || !voice.gain || !voice.source) {
+            return false;
+        }
+
+        const ctx = this.context;
+        // fade out then remove sound pointed too by handle
+        voice.gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + this.removalFadeDuration);
+        voice.source.stop(ctx.currentTime + this.removalFadeDuration); // this triggers removal through callback
+
+        return true;
     }
 }
