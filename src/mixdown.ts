@@ -1,6 +1,6 @@
 // A Web Audio based mixer for games.
 
-import {GenerationHandle, GenerationalArena} from "./GenerationalArena.js";
+import {GenerationHandle, GenerationalArena} from "./GenerationalArena";
 
 enum Priority {
     Low = 0,
