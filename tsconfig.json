@@ -13,7 +13,8 @@
   },
   "exclude": [
     "examples",
-    "dist"
+    "dist",
+    "node_modules"
   ],
   "include": [
     "src"
