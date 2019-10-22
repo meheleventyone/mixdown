@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A Web Audio based mixer for games.",
   "private": true,
+  "types": "./dist/mixdown.d.ts",
+  "main": "./dist/mixdown.js",
+  "module": "./dist/mixdown.module.js",
   "directories": {
     "example": "examples"
   },
