@@ -2,7 +2,7 @@
 
 import {GenerationHandle, GenerationalArena} from "./GenerationalArena";
 
-enum Priority {
+export enum Priority {
     Low = 0,
     Medium,
     High
@@ -35,7 +35,7 @@ interface Music {
 
 type Playable = Sound | Music;
 
-enum OperationResult {
+export enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST,
 }

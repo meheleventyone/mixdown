@@ -8,23 +8,24 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && rollup --config"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/meheleventyone/mixdown.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Charles Palmer",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/meheleventyone/mixdown/issues"
   },
   "homepage": "https://github.com/meheleventyone/mixdown#readme",
   "devDependencies": {
+    "rollup": "^1.25.1",
+    "rollup-plugin-typescript2": "^0.24.3",
     "ts-loader": "^6.2.0",
-    "typescript": "^3.6.4",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.9"
+    "typescript": "^3.6.4"
   }
 }

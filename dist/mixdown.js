@@ -1,1 +1,346 @@
-!function(t){var e={};function n(o){if(e[o])return e[o].exports;var i=e[o]={i:o,l:!1,exports:{}};return t[o].call(i.exports,i,i.exports,n),i.l=!0,i.exports}n.m=t,n.c=e,n.d=function(t,e,o){n.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:o})},n.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},n.t=function(t,e){if(1&e&&(t=n(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var o=Object.create(null);if(n.r(o),Object.defineProperty(o,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var i in t)n.d(o,i,function(e){return t[e]}.bind(null,i));return o},n.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return n.d(e,"a",e),e},n.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},n.p="",n(n.s=0)}([function(t,e,n){"use strict";n.r(e);var o,i,r=function(){function t(t){this.generation=[],this.data=[],this.freeList=[];for(var e=0;e<t;++e)this.generation[e]=0,this.data[e]=null,this.freeList.push(e)}return t.prototype.add=function(t){if(0!==this.freeList.length){var e=this.freeList.pop();return this.data[e]=t,{index:e,generation:this.generation[e]}}},t.prototype.get=function(t){if(t.generation===this.generation[t.index]){var e=t.index;if(null!==this.data[e])return this.data[e]}},t.prototype.findFirst=function(t){for(var e=0;e<this.data.length;++e){var n=this.data[e];if(null!==n&&t(n))return n}},t.prototype.remove=function(t){if(t.generation===this.generation[t.index]){var e=t.index;this.generation[e]+=1,this.data[e]=null,this.freeList.push(e)}},t.prototype.valid=function(t){return t.generation===this.generation[t.index]},t.prototype.numFreeSlots=function(){return this.freeList.length},t.prototype.numUsedSlots=function(){return this.data.length-this.freeList.length},t}();n.d(e,"Mixdown",(function(){return s})),function(t){t[t.Low=0]="Low",t[t.Medium=1]="Medium",t[t.High=2]="High"}(o||(o={})),function(t){t[t.SUCCESS=0]="SUCCESS",t[t.DOES_NOT_EXIST=1]="DOES_NOT_EXIST"}(i||(i={}));var s=function(){function t(t,e,n){void 0===t&&(t=32),void 0===e&&(e=2),void 0===n&&(n=4),this.context=new AudioContext,this.assetMap={},this.removalFadeDuration=.2,this.maxSounds=t,this.slopSize=n,this.masterGain=this.context.createGain(),this.masterGain.connect(this.context.destination),this.voices=new r(t),this.streams=new r(e)}return t.prototype.suspend=function(){"suspended"!==this.context.state&&this.context.suspend()},t.prototype.resume=function(){"running"!==this.context.state&&this.context.resume()},t.prototype.play=function(t){switch(t.kind){case"sound":return this.playSound(t);case"music":return this.playMusic(t)}},t.prototype.playSound=function(t){var e=this,n=this.assetMap[t.asset];if(n){var o=this.numFreeSlots();if(o<=0)console.warn("mixdown had no free slots to play sound.");else{var i=this.context;o<=this.slopSize&&this.evictVoice(t.priority);var r=i.createBufferSource();r.buffer=n,t.loop&&(r.loop=!0,r.loopStart=t.loop.start,r.loopEnd=t.loop.end);var s=i.createStereoPanner();r.connect(s);var a=i.createGain();s.connect(a),a.gain.setValueAtTime(t.gain,i.currentTime),a.connect(this.masterGain);var u=0,c=n.duration;t.clip&&(c=Math.max(0,t.clip.end-t.clip.start),u=t.clip.start),r.start(0,u,c);var p=this.voices.add({gain:a,balance:s,source:r,priority:t.priority});if(p){var d={kind:"voice",index:p.index,generation:p.generation};return r.onended=function(){e.voiceEnded(d)},d}}}},t.prototype.playMusic=function(t){if(0!==this.streams.numFreeSlots())if(this.numFreeSlots()<=0)console.warn("mixdown had no free slots to play music.");else{var e=new Audio(t.source);e.autoplay=!0,e.loop=!0;var n=this.context,o=n.createMediaElementSource(e),i=n.createStereoPanner();o.connect(i);var r=n.createGain();i.connect(r),r.gain.setValueAtTime(t.gain,n.currentTime),r.connect(this.masterGain);var s=this.streams.add({gain:r,balance:i,source:o,audio:e});if(s)return{kind:"stream",index:s.index,generation:s.generation}}},t.prototype.stop=function(t){return"voice"===t.kind?this.stopSound(t):this.stopMusic(t)},t.prototype.stopSound=function(t){var e=this.voices.get(t);return e&&e.source?(e.source.stop(),i.SUCCESS):i.DOES_NOT_EXIST},t.prototype.stopMusic=function(t){var e=this.streams.get(t);return e&&e.source&&e.gain&&e.balance?(e.source.disconnect(),e.gain.disconnect(),e.balance.disconnect(),e.audio.pause(),this.streams.remove(t),i.SUCCESS):i.DOES_NOT_EXIST},t.prototype.loop=function(t,e,n){void 0===e&&(e=0),void 0===n&&(n=0);var o=this.voices.get(t);if(!o)return i.DOES_NOT_EXIST;var r=o.source;return r.loop=!0,r.loopStart=e,r.loopEnd=n,i.SUCCESS},t.prototype.stopLoop=function(t){var e=this.voices.get(t);if(!e)return i.DOES_NOT_EXIST;var n=e.source;return n.loop=!1,n.loopStart=0,n.loopEnd=0,i.SUCCESS},t.prototype.fadeTo=function(t,e,n){var o;return(o="voice"===t.kind?this.voices.get(t):this.streams.get(t))?(o.gain.gain.exponentialRampToValueAtTime(e,this.context.currentTime+n),i.SUCCESS):i.DOES_NOT_EXIST},t.prototype.fadeOut=function(t,e){return this.fadeTo(t,.001,e)},t.prototype.gain=function(t,e){var n;return(n="voice"===t.kind?this.voices.get(t):this.streams.get(t))&&n.gain?(n.gain.gain.setValueAtTime(e,this.context.currentTime),i.SUCCESS):i.DOES_NOT_EXIST},t.prototype.balance=function(t,e){var n;return(n="voice"===t.kind?this.voices.get(t):this.streams.get(t))&&n.balance?(n.balance.pan.setValueAtTime(e,this.context.currentTime),i.SUCCESS):i.DOES_NOT_EXIST},t.prototype.loadAsset=function(t,e){var n=this;fetch(e).then((function(t){return t.arrayBuffer()})).then((function(t){return n.context.decodeAudioData(t)})).then((function(e){return n.assetMap[t]=e})).catch((function(t){return console.error(t)}))},t.prototype.numFreeSlots=function(){return this.voices.numFreeSlots()-this.streams.numUsedSlots()},t.prototype.voiceEnded=function(t){var e=this.voices.get(t);e&&e.source&&e.gain&&e.balance&&(e.source.disconnect(),e.source.buffer=null,e.gain.disconnect(),e.balance.disconnect(),this.voices.remove(t))},t.prototype.evictVoice=function(t){var e=this.voices.findFirst((function(e){return e.priority<t}));if(void 0===e||!e.gain||!e.source)return!1;var n=this.context;return e.gain.gain.exponentialRampToValueAtTime(.001,n.currentTime+this.removalFadeDuration),e.source.stop(n.currentTime+this.removalFadeDuration),!0},t}()}]);
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (global = global || self, factory(global.mixdown = {}));
+}(this, function (exports) { 'use strict';
+
+    // todo: maybe let this take a second type constrained to being something that matches
+    // GenerationHandle so users can define the return type if they don't want to wrap the 
+    // arena
+    var GenerationalArena = /** @class */ (function () {
+        function GenerationalArena(size) {
+            this.generation = [];
+            this.data = [];
+            this.freeList = [];
+            for (var i = 0; i < size; ++i) {
+                this.generation[i] = 0;
+                this.data[i] = null;
+                this.freeList.push(i);
+            }
+        }
+        GenerationalArena.prototype.add = function (data) {
+            if (this.freeList.length === 0) {
+                return undefined;
+            }
+            var index = this.freeList.pop();
+            this.data[index] = data;
+            return { index: index, generation: this.generation[index] };
+        };
+        GenerationalArena.prototype.get = function (handle) {
+            if (handle.generation !== this.generation[handle.index]) {
+                return undefined;
+            }
+            var index = handle.index;
+            if (this.data[index] === null) {
+                return undefined;
+            }
+            return this.data[index];
+        };
+        GenerationalArena.prototype.findFirst = function (test) {
+            for (var i = 0; i < this.data.length; ++i) {
+                var data = this.data[i];
+                if (data === null) {
+                    continue;
+                }
+                if (!test(data)) {
+                    continue;
+                }
+                return data;
+            }
+        };
+        GenerationalArena.prototype.remove = function (handle) {
+            if (handle.generation !== this.generation[handle.index]) {
+                return undefined;
+            }
+            var index = handle.index;
+            this.generation[index] += 1;
+            this.data[index] = null;
+            this.freeList.push(index);
+        };
+        GenerationalArena.prototype.valid = function (handle) {
+            return handle.generation === this.generation[handle.index];
+        };
+        GenerationalArena.prototype.numFreeSlots = function () {
+            return this.freeList.length;
+        };
+        GenerationalArena.prototype.numUsedSlots = function () {
+            return this.data.length - this.freeList.length;
+        };
+        return GenerationalArena;
+    }());
+
+    // A Web Audio based mixer for games.
+    (function (Priority) {
+        Priority[Priority["Low"] = 0] = "Low";
+        Priority[Priority["Medium"] = 1] = "Medium";
+        Priority[Priority["High"] = 2] = "High";
+    })(exports.Priority || (exports.Priority = {}));
+    (function (OperationResult) {
+        OperationResult[OperationResult["SUCCESS"] = 0] = "SUCCESS";
+        OperationResult[OperationResult["DOES_NOT_EXIST"] = 1] = "DOES_NOT_EXIST";
+    })(exports.OperationResult || (exports.OperationResult = {}));
+    var Mixdown = /** @class */ (function () {
+        function Mixdown(maxSounds, maxStreams, slopSize) {
+            if (maxSounds === void 0) { maxSounds = 32; }
+            if (maxStreams === void 0) { maxStreams = 2; }
+            if (slopSize === void 0) { slopSize = 4; }
+            this.context = new AudioContext();
+            this.assetMap = {};
+            this.removalFadeDuration = 0.2;
+            this.maxSounds = maxSounds;
+            this.slopSize = slopSize;
+            this.masterGain = this.context.createGain();
+            this.masterGain.connect(this.context.destination);
+            // technically we'll have more playing power than maxSounds would
+            // suggest but will consider the voices and streams a union and never
+            // exceed maxSounds things playing together
+            this.voices = new GenerationalArena(maxSounds);
+            this.streams = new GenerationalArena(maxStreams);
+        }
+        Mixdown.prototype.suspend = function () {
+            if (this.context.state === "suspended") {
+                return;
+            }
+            // todo: kill active sounds
+            this.context.suspend();
+        };
+        Mixdown.prototype.resume = function () {
+            if (this.context.state === "running") {
+                return;
+            }
+            this.context.resume();
+        };
+        Mixdown.prototype.play = function (playable) {
+            switch (playable.kind) {
+                case "sound":
+                    return this.playSound(playable);
+                case "music":
+                    return this.playMusic(playable);
+            }
+            return undefined;
+        };
+        Mixdown.prototype.playSound = function (sound) {
+            var _this = this;
+            var buffer = this.assetMap[sound.asset];
+            if (!buffer) {
+                return undefined;
+            }
+            // if there is no space we cannot play this sound
+            // log a warning and continue
+            var freeSlots = this.numFreeSlots();
+            if (freeSlots <= 0) {
+                console.warn("mixdown had no free slots to play sound.");
+                return undefined;
+            }
+            var ctx = this.context;
+            if (freeSlots <= this.slopSize) {
+                this.evictVoice(sound.priority);
+            }
+            var source = ctx.createBufferSource();
+            source.buffer = buffer;
+            if (sound.loop) {
+                source.loop = true;
+                source.loopStart = sound.loop.start;
+                source.loopEnd = sound.loop.end;
+            }
+            var balance = ctx.createStereoPanner();
+            source.connect(balance);
+            var gain = ctx.createGain();
+            balance.connect(gain);
+            gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
+            gain.connect(this.masterGain);
+            var start = 0;
+            var duration = buffer.duration;
+            if (sound.clip) {
+                duration = Math.max(0, sound.clip.end - sound.clip.start);
+                start = sound.clip.start;
+            }
+            source.start(0, start, duration);
+            var handle = this.voices.add({ gain: gain, balance: balance, source: source, priority: sound.priority });
+            if (!handle) {
+                return undefined;
+            }
+            var voiceHandle = { kind: "voice", index: handle.index, generation: handle.generation };
+            source.onended = function () { _this.voiceEnded(voiceHandle); };
+            return voiceHandle;
+        };
+        Mixdown.prototype.playMusic = function (music) {
+            if (this.streams.numFreeSlots() === 0) {
+                return undefined;
+            }
+            // if there is no space we cannot play this music
+            // log a warning and continue
+            var freeSlots = this.numFreeSlots();
+            if (freeSlots <= 0) {
+                console.warn("mixdown had no free slots to play music.");
+                return undefined;
+            }
+            // we don't do eviction for music as the assumption is that we're changing tracks and music is highest priority
+            // and long lasting so we can afford to take up some slop and let sounds adjust accordingly
+            var audio = new Audio(music.source);
+            audio.autoplay = true;
+            audio.loop = true;
+            var ctx = this.context;
+            var source = ctx.createMediaElementSource(audio);
+            var balance = ctx.createStereoPanner();
+            source.connect(balance);
+            var gain = ctx.createGain();
+            balance.connect(gain);
+            gain.gain.setValueAtTime(music.gain, ctx.currentTime);
+            gain.connect(this.masterGain);
+            var handle = this.streams.add({ gain: gain, balance: balance, source: source, audio: audio });
+            if (!handle) {
+                return undefined;
+            }
+            var streamHandle = { kind: "stream", index: handle.index, generation: handle.generation };
+            return streamHandle;
+        };
+        Mixdown.prototype.stop = function (index) {
+            if (index.kind === "voice") {
+                return this.stopSound(index);
+            }
+            else {
+                return this.stopMusic(index);
+            }
+        };
+        Mixdown.prototype.stopSound = function (index) {
+            var voice = this.voices.get(index);
+            if (!voice) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            if (!voice.source) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            voice.source.stop();
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.stopMusic = function (index) {
+            var stream = this.streams.get(index);
+            if (!stream || !stream.source || !stream.gain || !stream.balance) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            stream.source.disconnect();
+            stream.gain.disconnect();
+            stream.balance.disconnect();
+            stream.audio.pause();
+            this.streams.remove(index);
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.loop = function (index, start, end) {
+            if (start === void 0) { start = 0; }
+            if (end === void 0) { end = 0; }
+            var element = this.voices.get(index);
+            if (!element) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            var source = element.source;
+            source.loop = true;
+            source.loopStart = start;
+            source.loopEnd = end;
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.stopLoop = function (index) {
+            var element = this.voices.get(index);
+            if (!element) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            var source = element.source;
+            source.loop = false;
+            source.loopStart = 0;
+            source.loopEnd = 0;
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.fadeTo = function (index, value, duration) {
+            var element;
+            if (index.kind === "voice") {
+                element = this.voices.get(index);
+            }
+            else {
+                element = this.streams.get(index);
+            }
+            if (!element) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            element.gain.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.fadeOut = function (index, duration) {
+            return this.fadeTo(index, 0.001, duration);
+        };
+        Mixdown.prototype.gain = function (index, value) {
+            var element;
+            if (index.kind === "voice") {
+                element = this.voices.get(index);
+            }
+            else {
+                element = this.streams.get(index);
+            }
+            if (!element || !element.gain) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            element.gain.gain.setValueAtTime(value, this.context.currentTime);
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.balance = function (index, value) {
+            var element;
+            if (index.kind === "voice") {
+                element = this.voices.get(index);
+            }
+            else {
+                element = this.streams.get(index);
+            }
+            if (!element || !element.balance) {
+                return exports.OperationResult.DOES_NOT_EXIST;
+            }
+            element.balance.pan.setValueAtTime(value, this.context.currentTime);
+            return exports.OperationResult.SUCCESS;
+        };
+        Mixdown.prototype.loadAsset = function (name, path) {
+            // todo: make sure we're loading something we support
+            // todo: return promise from this to cover user callbacks?
+            // todo: xmlhttprequest for backwards compat?
+            var _this = this;
+            fetch(path)
+                .then(function (response) { return response.arrayBuffer(); })
+                .then(function (data) { return _this.context.decodeAudioData(data); })
+                .then(function (buffer) { return _this.assetMap[name] = buffer; })
+                .catch(function (error) { return console.error(error); });
+        };
+        Mixdown.prototype.numFreeSlots = function () {
+            return this.voices.numFreeSlots() - this.streams.numUsedSlots();
+        };
+        Mixdown.prototype.voiceEnded = function (handle) {
+            var voice = this.voices.get(handle);
+            if (!voice || !voice.source || !voice.gain || !voice.balance) {
+                return;
+            }
+            voice.source.disconnect();
+            voice.source.buffer = null;
+            voice.gain.disconnect();
+            voice.balance.disconnect();
+            this.voices.remove(handle);
+        };
+        Mixdown.prototype.evictVoice = function (priority) {
+            // we are going to nicely evict one of the currently playing sounds at
+            // a lower priority, music is counted as never to be removed
+            // right now we're just going to evict the first thing we come across
+            // in the future we might want this to be more heuristic based 
+            // (e.g. evict the quietest sound with the lowest priority)
+            var voice = this.voices.findFirst(function (voice) { return voice.priority < priority; });
+            if (voice === undefined || !voice.gain || !voice.source) {
+                return false;
+            }
+            var ctx = this.context;
+            // fade out then remove sound pointed too by handle
+            voice.gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + this.removalFadeDuration);
+            voice.source.stop(ctx.currentTime + this.removalFadeDuration); // this triggers removal through callback
+            return true;
+        };
+        return Mixdown;
+    }());
+
+    exports.Mixdown = Mixdown;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
