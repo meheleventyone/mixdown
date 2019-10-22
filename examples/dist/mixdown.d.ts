@@ -1,5 +1,22 @@
-import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
-export declare enum Priority {
+interface GenerationHandle {
+    readonly index: number;
+    readonly generation: number;
+}
+declare class GenerationalArena<T> {
+    generation: number[];
+    data: (T | null)[];
+    freeList: number[];
+    constructor(size: number);
+    add(data: T): GenerationHandle | undefined;
+    get(handle: GenerationHandle): T | undefined;
+    findFirst(test: (data: T) => boolean): T | undefined;
+    remove(handle: GenerationHandle): undefined;
+    valid(handle: GenerationHandle): boolean;
+    numFreeSlots(): number;
+    numUsedSlots(): number;
+}
+
+declare enum Priority {
     Low = 0,
     Medium = 1,
     High = 2
@@ -26,7 +43,7 @@ interface Music {
     gain: number;
 }
 declare type Playable = Sound | Music;
-export declare enum OperationResult {
+declare enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST = 1
 }
@@ -48,7 +65,7 @@ declare type VoiceGenerationHandle = {
 declare type StreamGenerationHandle = {
     kind: "stream";
 } & GenerationHandle;
-export declare class Mixdown {
+declare class Mixdown {
     context: AudioContext;
     assetMap: Record<string, AudioBuffer>;
     maxSounds: number;
@@ -77,4 +94,5 @@ export declare class Mixdown {
     private voiceEnded;
     private evictVoice;
 }
-export {};
+
+export { Mixdown, OperationResult, Priority };

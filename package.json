@@ -24,6 +24,7 @@
   "homepage": "https://github.com/meheleventyone/mixdown#readme",
   "devDependencies": {
     "rollup": "^1.25.1",
+    "rollup-plugin-dts": "^1.1.10",
     "rollup-plugin-typescript2": "^0.24.3",
     "ts-loader": "^6.2.0",
     "typescript": "^3.6.4"

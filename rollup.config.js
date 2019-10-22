@@ -1,4 +1,7 @@
 import typescript from 'rollup-plugin-typescript2';
+import dts from "rollup-plugin-dts";
+
+let override = { compilerOptions: { declaration: false } };
 
 export default [
 {
@@ -11,7 +14,7 @@ export default [
         }
     ],
 	plugins: [
-		typescript(/*{ plugin options }*/)
+		typescript({tsconfigOverride:override})
 	]
 },
 {
@@ -23,7 +26,19 @@ export default [
         }
     ],
 	plugins: [
-		typescript(/*{ plugin options }*/)
+        typescript({useTsconfigDeclarationDir:true})
+	]
+},
+{
+	input: './types/mixdown.d.ts',
+    output: [
+        {
+            format: 'esm',
+            file: './dist/mixdown.d.ts'
+        }
+    ],
+	plugins: [
+        dts(/*{ plugin options }*/)
 	]
 }
 ]
