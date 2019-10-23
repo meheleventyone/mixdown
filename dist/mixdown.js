@@ -142,6 +142,10 @@
                 source.loop = true;
                 source.loopStart = sound.loop.start;
                 source.loopEnd = sound.loop.end;
+                if (sound.clip) {
+                    source.loopStart = sound.clip.start;
+                    source.loopEnd = sound.clip.end;
+                }
             }
             var balance = ctx.createStereoPanner();
             source.connect(balance);
@@ -155,7 +159,12 @@
                 duration = Math.max(0, sound.clip.end - sound.clip.start);
                 start = sound.clip.start;
             }
-            source.start(0, start, duration);
+            if (!sound.loop) {
+                source.start(0, start, duration);
+            }
+            else {
+                source.start();
+            }
             var handle = this.voices.add({ gain: gain, balance: balance, source: source, priority: sound.priority });
             if (!handle) {
                 return undefined;

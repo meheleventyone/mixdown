@@ -54,8 +54,8 @@ interface Stream {
     audio: HTMLAudioElement;
 }
 
-type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
-type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
+export type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
+export type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
 
 export class Mixdown {
     context : AudioContext = new AudioContext();
@@ -136,6 +136,10 @@ export class Mixdown {
             source.loop = true;
             source.loopStart = sound.loop.start;
             source.loopEnd = sound.loop.end;
+            if (sound.clip) {
+                source.loopStart = sound.clip.start;
+                source.loopEnd = sound.clip.end;
+            }
         }
 
         let balance = ctx.createStereoPanner();
@@ -149,13 +153,18 @@ export class Mixdown {
 
         let start = 0;
         let duration = buffer.duration;
+
         if (sound.clip) {
             duration = Math.max(0, sound.clip.end - sound.clip.start);
             start = sound.clip.start;
         }
 
-        source.start(0, start, duration);
-
+        if (!sound.loop) {
+            source.start(0, start, duration);
+        } else {
+            source.start();
+        }
+    
         let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sound.priority});
 
         if (!handle) {

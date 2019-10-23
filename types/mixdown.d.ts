@@ -42,10 +42,10 @@ interface Stream {
     source: MediaElementAudioSourceNode;
     audio: HTMLAudioElement;
 }
-declare type VoiceGenerationHandle = {
+export declare type VoiceGenerationHandle = {
     kind: "voice";
 } & GenerationHandle;
-declare type StreamGenerationHandle = {
+export declare type StreamGenerationHandle = {
     kind: "stream";
 } & GenerationHandle;
 export declare class Mixdown {
