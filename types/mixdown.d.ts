@@ -4,15 +4,15 @@ export declare enum Priority {
     Medium = 1,
     High = 2
 }
-interface SoundLoop {
+export interface SoundLoop {
     start: number;
     end: number;
 }
-interface SoundClip {
+export interface SoundClip {
     start: number;
     end: number;
 }
-interface Sound {
+export interface Sound {
     kind: "sound";
     priority: Priority;
     asset: string;
@@ -20,12 +20,12 @@ interface Sound {
     loop?: SoundLoop;
     clip?: SoundClip;
 }
-interface Music {
+export interface Music {
     kind: "music";
     source: string;
     gain: number;
 }
-declare type Playable = Sound | Music;
+export declare type Playable = Sound | Music;
 export declare enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST = 1

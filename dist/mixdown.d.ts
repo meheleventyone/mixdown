@@ -95,4 +95,4 @@ declare class Mixdown {
     private evictVoice;
 }
 
-export { Mixdown, OperationResult, Priority, StreamGenerationHandle, VoiceGenerationHandle };
+export { Mixdown, Music, OperationResult, Playable, Priority, Sound, SoundClip, SoundLoop, StreamGenerationHandle, VoiceGenerationHandle };

@@ -8,17 +8,17 @@ export enum Priority {
     High
 }
 
-interface SoundLoop {
+export interface SoundLoop {
     start : number;
     end : number;
 }
 
-interface SoundClip {
+export interface SoundClip {
     start : number;
     end : number;
 }
 
-interface Sound {
+export interface Sound {
     kind : "sound";
     priority : Priority;
     asset : string;
@@ -27,13 +27,13 @@ interface Sound {
     clip? : SoundClip;
 }
 
-interface Music {
+export interface Music {
     kind : "music";
     source : string;
     gain : number;
 }
 
-type Playable = Sound | Music;
+export type Playable = Sound | Music;
 
 export enum OperationResult {
     SUCCESS = 0,
