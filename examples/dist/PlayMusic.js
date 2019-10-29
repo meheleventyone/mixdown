@@ -5,4 +5,6 @@ function unlock() {
     mixdown.playMusic({ kind: "music", source: "../assets/paradise.mp3", gain: 1 });
 }
 var button = document.getElementById("playmusic");
-button.addEventListener("click", unlock);
+if (button) {
+    button.addEventListener("click", unlock);
+}

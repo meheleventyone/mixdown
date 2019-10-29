@@ -9,4 +9,6 @@ function unlock() {
 }
 
 const button = document.getElementById("playsound");
-button.addEventListener("click", unlock);
+if (button) {
+    button.addEventListener("click", unlock);
+}

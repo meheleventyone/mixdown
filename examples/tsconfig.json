@@ -2,7 +2,8 @@
   "compilerOptions": {
     "baseUrl": "src",
     "outDir": "./dist",
-    "module": "es2015"
+    "module": "es2015",
+    "strict": true
   },
   "include": [
     "src"

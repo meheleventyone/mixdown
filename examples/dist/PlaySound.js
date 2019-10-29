@@ -6,4 +6,6 @@ function unlock() {
     mixdown.playSound({ kind: "sound", asset: "twang", gain: 1, priority: Priority.High });
 }
 var button = document.getElementById("playsound");
-button.addEventListener("click", unlock);
+if (button) {
+    button.addEventListener("click", unlock);
+}
