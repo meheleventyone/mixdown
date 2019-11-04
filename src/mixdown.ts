@@ -59,7 +59,7 @@ export type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
 
 export class Mixdown {
     context : AudioContext = new AudioContext();
-    assetMap : Record<string, AudioBuffer> = {};
+    assetMap : Record<string, AudioBuffer | undefined> = {};
     maxSounds : number;
     slopSize : number;
     masterGain : GainNode;
@@ -261,7 +261,7 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
-    loop(index : VoiceGenerationHandle, start : number = 0, end : number = 0) : OperationResult {
+    loop(index : VoiceGenerationHandle, start? : number, end? : number) : OperationResult {
         let element = this.voices.get(index);
 
         if (!element) {
@@ -270,8 +270,13 @@ export class Mixdown {
 
         const source = element.source;
         source.loop = true;
-        source.loopStart = start;
-        source.loopEnd = end;
+        if (start) {
+            source.loopStart = start;
+        }
+
+        if (end) {
+            source.loopEnd = end;
+        }
         return OperationResult.SUCCESS;
     }
 
@@ -341,20 +346,31 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
-    loadAsset(name : string, path : string) {
+    loadAsset(name : string, path : string) : Promise<boolean> {
         // todo: make sure we're loading something we support
-        // todo: return promise from this to cover user callbacks?
         // todo: xmlhttprequest for backwards compat?
 
-        fetch(path)
-        .then(response => response.arrayBuffer())
-        .then(data => this.context.decodeAudioData(data))
-        .then(buffer => this.assetMap[name] = buffer)
-        .catch(error => console.error(error));
+        return new Promise<boolean>((resolve, reject) => {
+            fetch(path)
+            .then(response => response.arrayBuffer())
+            .then(data => this.context.decodeAudioData(data))
+            .then(buffer => {
+                this.assetMap[name] = buffer;
+                resolve(true);
+            })
+            .catch(error => {
+                console.log(error); 
+                reject(false);
+            });
+        });
     }
 
     numFreeSlots() : number {
         return this.voices.numFreeSlots() - this.streams.numUsedSlots();
+    }
+
+    getBuffer(assetName : string) : AudioBuffer | undefined {
+        return this.assetMap[assetName];
     }
 
     private voiceEnded(handle : VoiceGenerationHandle) {

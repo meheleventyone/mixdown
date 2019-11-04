@@ -50,7 +50,7 @@ export declare type StreamGenerationHandle = {
 } & GenerationHandle;
 export declare class Mixdown {
     context: AudioContext;
-    assetMap: Record<string, AudioBuffer>;
+    assetMap: Record<string, AudioBuffer | undefined>;
     maxSounds: number;
     slopSize: number;
     masterGain: GainNode;
@@ -72,8 +72,9 @@ export declare class Mixdown {
     fadeOut(index: VoiceGenerationHandle | StreamGenerationHandle, duration: number): OperationResult;
     gain(index: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
     balance(index: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
-    loadAsset(name: string, path: string): void;
+    loadAsset(name: string, path: string): Promise<boolean>;
     numFreeSlots(): number;
+    getBuffer(assetName: string): AudioBuffer | undefined;
     private voiceEnded;
     private evictVoice;
 }
