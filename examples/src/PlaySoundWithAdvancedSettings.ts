@@ -1,55 +1,4 @@
-import {Mixdown, Priority, VoiceGenerationHandle, Sound, SoundLoop, SoundClip} from "../dist/mixdown.module.js"
-
-let mixdown = new Mixdown();
-mixdown.loadAsset("twang", "../assets/twang.wav");
-
-let soundId : VoiceGenerationHandle | undefined =  undefined;
-
-let gain = 1;
-
-let balance = 0;
-
-let clip = false;
-let clipStart = 0;
-let clipEnd = 0;
-
-let loop = false;
-let loopStart = 0;
-let loopEnd = 0;
-
-function play() {
-    // todo check if need to resume
-    mixdown.resume();
-    let sound : Sound = {
-        kind: "sound",
-        asset: "twang",
-        gain: gain,
-        priority: Priority.High
-    };
-
-    if (loop) {
-        sound.loop = {
-            start: loopStart,
-            end: loopEnd
-        };
-    }
-
-    if (clip) {
-        sound.clip = {
-            start: clipStart,
-            end: clipEnd
-        }
-    }
-    soundId = mixdown.playSound(sound);
-}
-
-function stop() {
-    if (!soundId) {
-        return;
-    }
-
-    mixdown.stop(soundId);
-}
+import {Mixdown, Priority, VoiceGenerationHandle, Sound} from "../dist/mixdown.module.js"
 
 function getEventFloatValue(event : Event) : number {
     return parseFloat((event.currentTarget as HTMLInputElement).value);
@@ -74,11 +23,11 @@ function clipChanged(event: Event) {
 }
 
 function clipStartChanged(event: Event) {
-    clipStart =  getEventFloatValue(event);
+    clipStart = getEventFloatValue(event);
 }
 
 function clipEndChanged(event: Event) {
-    clipEnd =  getEventFloatValue(event);    
+    clipEnd = getEventFloatValue(event);    
 }
 
 function loopChanged(event: Event) {
@@ -97,23 +46,32 @@ function loopChanged(event: Event) {
 }
 
 function loopStartChanged(event: Event) {
-    loopStart = getEventFloatValue(event);
+    if (!buffer) {
+        return;
+    }
+
+    loopStart = getEventFloatValue(event) * buffer.duration;
 
     if (!loop || !soundId) {
         return;
     }
-
+    console.log("start " + loopStart);
     // todo check playing
     mixdown.loop(soundId, loopStart, loopEnd);
 }
 
 function loopEndChanged(event: Event) {
-    loopEnd = getEventFloatValue(event);
+    if (!buffer) {
+        return;
+    }
+
+    loopEnd = getEventFloatValue(event) * buffer.duration;
 
     if (!loop || !soundId) {
         return;
     }
 
+    console.log("end " + loopEnd);
     // todo check playing
     mixdown.loop(soundId, loopStart, loopEnd);
 }
@@ -143,27 +101,96 @@ if (clipCheckbox) {
     clipCheckbox.addEventListener("input", clipChanged);
 }
 
-const clipStartSlider = document.getElementById("clipstart");
+const clipStartSlider = document.getElementById("clipstart") as HTMLInputElement;
 if (clipStartSlider) {
     clipStartSlider.addEventListener("input", clipStartChanged);
 }
 
-const clipEndSlider = document.getElementById("clipend");
+const clipEndSlider = document.getElementById("clipend") as HTMLInputElement;
 if (clipEndSlider) {
     clipEndSlider.addEventListener("input", clipEndChanged);
 }
 
-const loopCheckbox = document.getElementById("loop");
+const loopCheckbox = document.getElementById("loop") as HTMLInputElement;
 if (loopCheckbox) {
     loopCheckbox.addEventListener("input", loopChanged);
 }
 
-const loopStartSlider = document.getElementById("loopstart");
+const loopStartSlider = document.getElementById("loopstart") as HTMLInputElement;
 if (loopStartSlider) {
     loopStartSlider.addEventListener("input", loopStartChanged);
 }
 
-const loopEndSlider = document.getElementById("loopend");
+const loopEndSlider = document.getElementById("loopend") as HTMLInputElement;
 if (loopEndSlider) {
     loopEndSlider.addEventListener("input", loopEndChanged);
+}
+
+let mixdown = new Mixdown();
+let initialized = false;
+let buffer : AudioBuffer | undefined = undefined;
+
+mixdown.loadAsset("twang", "../assets/twang.wav").then(result => {
+    initialized = result;
+    buffer = mixdown.getBuffer("twang");
+    if (!buffer) {
+        return;
+    }
+    loop = loopCheckbox.checked;
+    loopStart = parseFloat(loopStartSlider.value) * buffer.duration;
+    loopEnd = parseFloat(loopEndSlider.value) * buffer.duration;
+});
+
+let soundId : VoiceGenerationHandle | undefined =  undefined;
+
+let gain = 1;
+
+let balance = 0;
+
+let clip = false;
+let clipStart = 0;
+let clipEnd = 0;
+
+let loop = false;
+let loopStart = 0;
+let loopEnd = 0;
+
+function play() {
+    if (!initialized || soundId) {
+        return;
+    }
+
+    // todo check if need to resume
+    mixdown.resume();
+    let sound : Sound = {
+        kind: "sound",
+        asset: "twang",
+        gain: gain,
+        priority: Priority.High
+    };
+
+    if (loop) {
+        console.log("start " + loopStart + " end " + loopEnd);
+        sound.loop = {
+            start: loopStart,
+            end: loopEnd
+        };
+    }
+
+    if (clip) {
+        sound.clip = {
+            start: clipStart,
+            end: clipEnd
+        }
+    }
+    soundId = mixdown.playSound(sound);
+}
+
+function stop() {
+    if (!soundId) {
+        return;
+    }
+
+    mixdown.stop(soundId);
+    soundId = undefined;
 }
