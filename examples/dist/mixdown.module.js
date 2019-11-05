@@ -257,13 +257,7 @@ class Mixdown {
         return OperationResult.SUCCESS;
     }
     fadeTo(index, value, duration) {
-        let element;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
-        }
-        else {
-            element = this.streams.get(index);
-        }
+        let element = this.getElement(index);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -274,13 +268,7 @@ class Mixdown {
         return this.fadeTo(index, 0.001, duration);
     }
     gain(index, value) {
-        let element;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
-        }
-        else {
-            element = this.streams.get(index);
-        }
+        let element = this.getElement(index);
         if (!element || !element.gain) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -288,13 +276,7 @@ class Mixdown {
         return OperationResult.SUCCESS;
     }
     balance(index, value) {
-        let element;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
-        }
-        else {
-            element = this.streams.get(index);
-        }
+        let element = this.getElement(index);
         if (!element || !element.balance) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -323,6 +305,20 @@ class Mixdown {
     }
     getBuffer(assetName) {
         return this.assetMap[assetName];
+    }
+    isPlaying(index) {
+        let element = this.getElement(index);
+        return element !== undefined;
+    }
+    getElement(index) {
+        let element = undefined;
+        if (index.kind === "voice") {
+            element = this.voices.get(index);
+        }
+        else {
+            element = this.streams.get(index);
+        }
+        return element;
     }
     voiceEnded(handle) {
         let voice = this.voices.get(handle);

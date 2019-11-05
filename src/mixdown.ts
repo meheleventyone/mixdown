@@ -300,12 +300,7 @@ export class Mixdown {
     }
 
     fadeTo(index : VoiceGenerationHandle | StreamGenerationHandle, value : number, duration : number) : OperationResult {
-        let element : Voice | Stream | undefined;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
-        } else {
-            element = this.streams.get(index);
-        }
+        let element = this.getElement(index);
 
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
@@ -320,12 +315,7 @@ export class Mixdown {
     }
 
     gain(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
-        let element : Voice | Stream | undefined;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
-        } else {
-            element = this.streams.get(index);
-        }
+        let element = this.getElement(index);
 
         if (!element || !element.gain) {
             return OperationResult.DOES_NOT_EXIST;
@@ -336,12 +326,7 @@ export class Mixdown {
     }
 
     balance(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
-        let element : Voice | Stream | undefined;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
-        } else {
-            element = this.streams.get(index);
-        }
+        let element = this.getElement(index);
 
         if (!element || !element.balance) {
             return OperationResult.DOES_NOT_EXIST;
@@ -376,6 +361,21 @@ export class Mixdown {
 
     getBuffer(assetName : string) : AudioBuffer | undefined {
         return this.assetMap[assetName];
+    }
+
+    isPlaying(index : VoiceGenerationHandle | StreamGenerationHandle) : boolean {
+        let element = this.getElement(index);
+        return element !== undefined;
+    }
+
+    private getElement(index : VoiceGenerationHandle | StreamGenerationHandle) : Voice | Stream | undefined {
+        let element : Voice | Stream | undefined = undefined;
+        if (index.kind === "voice") {
+            element = this.voices.get(index);
+        } else {
+            element = this.streams.get(index);
+        }
+        return element;
     }
 
     private voiceEnded(handle : VoiceGenerationHandle) {

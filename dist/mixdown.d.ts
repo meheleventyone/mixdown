@@ -93,6 +93,8 @@ declare class Mixdown {
     loadAsset(name: string, path: string): Promise<boolean>;
     numFreeSlots(): number;
     getBuffer(assetName: string): AudioBuffer | undefined;
+    isPlaying(index: VoiceGenerationHandle | StreamGenerationHandle): boolean;
+    private getElement;
     private voiceEnded;
     private evictVoice;
 }

@@ -136,7 +136,10 @@ let playIn = false;
 let playOut = false;
 
 function play() {
-    if (!initialized) {
+    if (soundId) {
+        mixdown.isPlaying(soundId);
+    }
+    if (!initialized || (soundId && mixdown.isPlaying(soundId))) {
         return;
     }
 

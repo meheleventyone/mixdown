@@ -107,7 +107,10 @@ var loop = false;
 var playIn = false;
 var playOut = false;
 function play() {
-    if (!initialized) {
+    if (soundId) {
+        mixdown.isPlaying(soundId);
+    }
+    if (!initialized || (soundId && mixdown.isPlaying(soundId))) {
         return;
     }
     // todo check if need to resume
