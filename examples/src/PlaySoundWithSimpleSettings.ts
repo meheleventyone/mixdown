@@ -1,11 +1,15 @@
 import {Mixdown, Priority, VoiceGenerationHandle} from "../dist/mixdown.module.js"
 
 let mixdown = new Mixdown();
-mixdown.loadAsset("twang", "../assets/twang.wav");
+mixdown.loadAsset("twang", "../assets/twang.wav").then(result => initialized = result);
 
 let gain = 1;
+let initialized = false;
 
 function unlock() {
+    if (!initialized) {
+        return;
+    }
     mixdown.resume();
     mixdown.playSound({kind: "sound", asset:"twang", gain: gain, priority:Priority.High});
 }
