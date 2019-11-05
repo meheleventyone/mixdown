@@ -18,16 +18,27 @@ function balanceChanged(event : Event) {
     }
 }
 
-function clipChanged(event: Event) {
-    clip = (event.currentTarget as HTMLInputElement).checked;
-}
-
 function clipStartChanged(event: Event) {
-    clipStart = getEventFloatValue(event);
+    if (!buffer) {
+        return;
+    }
+
+    clipStart = getEventFloatValue(event) * buffer.duration;
+
+    if (soundId && loop) {
+        mixdown.loop(soundId, clipStart, clipEnd);
+    }
 }
 
 function clipEndChanged(event: Event) {
-    clipEnd = getEventFloatValue(event);    
+    if (!buffer) {
+        return;
+    }
+
+    clipEnd = getEventFloatValue(event) * buffer.duration;   
+    if (soundId && loop) {
+        mixdown.loop(soundId, clipStart, clipEnd);
+    } 
 }
 
 function loopChanged(event: Event) {
@@ -38,42 +49,18 @@ function loopChanged(event: Event) {
     }
 
     if (loop) {
-        mixdown.loop(soundId, loopStart, loopEnd);
+        mixdown.loop(soundId, clipStart, clipEnd);
     } else {
-        // todo check playing
-        mixdown.stopLoop(soundId);
+        mixdown.stop(soundId);
     }
 }
 
-function loopStartChanged(event: Event) {
-    if (!buffer) {
-        return;
-    }
-
-    loopStart = getEventFloatValue(event) * buffer.duration;
-
-    if (!loop || !soundId) {
-        return;
-    }
-    console.log("start " + loopStart);
-    // todo check playing
-    mixdown.loop(soundId, loopStart, loopEnd);
+function loopPlayInChanged(event: Event) {
+    playIn = (event.currentTarget as HTMLInputElement).checked;
 }
 
-function loopEndChanged(event: Event) {
-    if (!buffer) {
-        return;
-    }
-
-    loopEnd = getEventFloatValue(event) * buffer.duration;
-
-    if (!loop || !soundId) {
-        return;
-    }
-
-    console.log("end " + loopEnd);
-    // todo check playing
-    mixdown.loop(soundId, loopStart, loopEnd);
+function loopPlayOutChanged(event: Event) {
+    playOut = (event.currentTarget as HTMLInputElement).checked;
 }
 
 const playButton = document.getElementById("playsound");
@@ -96,11 +83,6 @@ if (balanceSlider) {
     balanceSlider.addEventListener("input", balanceChanged);
 }
 
-const clipCheckbox = document.getElementById("clip");
-if (clipCheckbox) {
-    clipCheckbox.addEventListener("input", clipChanged);
-}
-
 const clipStartSlider = document.getElementById("clipstart") as HTMLInputElement;
 if (clipStartSlider) {
     clipStartSlider.addEventListener("input", clipStartChanged);
@@ -116,14 +98,14 @@ if (loopCheckbox) {
     loopCheckbox.addEventListener("input", loopChanged);
 }
 
-const loopStartSlider = document.getElementById("loopstart") as HTMLInputElement;
-if (loopStartSlider) {
-    loopStartSlider.addEventListener("input", loopStartChanged);
+const loopPlayInCheckbox = document.getElementById("playin") as HTMLInputElement;
+if (loopPlayInCheckbox) {
+    loopPlayInCheckbox.addEventListener("input", loopPlayInChanged);
 }
 
-const loopEndSlider = document.getElementById("loopend") as HTMLInputElement;
-if (loopEndSlider) {
-    loopEndSlider.addEventListener("input", loopEndChanged);
+const loopPlayOutCheckbox = document.getElementById("playout") as HTMLInputElement;
+if (loopPlayOutCheckbox) {
+    loopPlayOutCheckbox.addEventListener("input", loopPlayOutChanged);
 }
 
 let mixdown = new Mixdown();
@@ -136,32 +118,31 @@ mixdown.loadAsset("twang", "../assets/twang.wav").then(result => {
     if (!buffer) {
         return;
     }
-    loop = loopCheckbox.checked;
-    loopStart = parseFloat(loopStartSlider.value) * buffer.duration;
-    loopEnd = parseFloat(loopEndSlider.value) * buffer.duration;
+
+    clipStart = parseFloat(clipStartSlider.value) * buffer.duration;
+    clipEnd = parseFloat(clipEndSlider.value) * buffer.duration;
 });
 
 let soundId : VoiceGenerationHandle | undefined =  undefined;
 
 let gain = 1;
-
 let balance = 0;
 
-let clip = false;
 let clipStart = 0;
 let clipEnd = 0;
 
 let loop = false;
-let loopStart = 0;
-let loopEnd = 0;
+let playIn = false;
+let playOut = false;
 
 function play() {
-    if (!initialized || soundId) {
+    if (!initialized) {
         return;
     }
 
     // todo check if need to resume
     mixdown.resume();
+
     let sound : Sound = {
         kind: "sound",
         asset: "twang",
@@ -170,19 +151,17 @@ function play() {
     };
 
     if (loop) {
-        console.log("start " + loopStart + " end " + loopEnd);
         sound.loop = {
-            start: loopStart,
-            end: loopEnd
+            playIn: playIn,
+            playOut: playOut
         };
     }
 
-    if (clip) {
-        sound.clip = {
-            start: clipStart,
-            end: clipEnd
-        }
+    sound.clip = {
+        start: clipStart,
+        end: clipEnd
     }
+
     soundId = mixdown.playSound(sound);
 }
 

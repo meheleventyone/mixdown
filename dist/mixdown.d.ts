@@ -22,8 +22,8 @@ declare enum Priority {
     High = 2
 }
 interface SoundLoop {
-    start: number;
-    end: number;
+    playIn: boolean;
+    playOut: boolean;
 }
 interface SoundClip {
     start: number;
@@ -52,6 +52,7 @@ interface Voice {
     balance: StereoPannerNode;
     source: AudioBufferSourceNode;
     priority: Priority;
+    playOut: boolean;
 }
 interface Stream {
     gain: GainNode;

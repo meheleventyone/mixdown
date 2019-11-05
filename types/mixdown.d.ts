@@ -5,8 +5,8 @@ export declare enum Priority {
     High = 2
 }
 export interface SoundLoop {
-    start: number;
-    end: number;
+    playIn: boolean;
+    playOut: boolean;
 }
 export interface SoundClip {
     start: number;
@@ -35,6 +35,7 @@ interface Voice {
     balance: StereoPannerNode;
     source: AudioBufferSourceNode;
     priority: Priority;
+    playOut: boolean;
 }
 interface Stream {
     gain: GainNode;

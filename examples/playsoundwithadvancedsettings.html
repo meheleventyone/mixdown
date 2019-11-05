@@ -9,20 +9,16 @@
         <label for="gain">Gain</label>
         </div>
         <div>
-        <input type="range" id="balance" min="-1" max="1" value="0" step="0.1">
+        <input type="range" id="balance" min="-1" max="1" value="0" step="0.01">
         <label for="balance">Balance</label>
         </div>
         <p>Clip settings:</p>
         <div>
-        <input type="checkbox" id="clip" value="false">
-        <label for="clip">Clip</label>
-        </div>
-        <div>
-        <input type="range" id="clipstart" min="0" max="1" step="0.1">  
+        <input type="range" id="clipstart" min="0" max="1" step="0.01" value="0">  
         <label for="clipstart">Start</label>
         </div>
         <div>
-        <input type="range" id="clipend" min="0" max="1" step="0.1"> 
+        <input type="range" id="clipend" min="0" max="1" step="0.01" value="1"> 
         <label for="clipend">End</label>   
         </div>
         <p>Loop settings:</p>
@@ -31,12 +27,12 @@
         <label for="loop">Loop</label>
         </div>
         <div>
-        <input type="range" id="loopstart" min="0" max="1" step="0.1">  
-        <label for="loopstart">Start</label>
+        <input type="checkbox" id="playin" value="false">  
+        <label for="playin">Play In</label>
         </div>
         <div>
-        <input type="range" id="loopend" min="0" max="1" step="0.1"> 
-        <label for="loopend">End</label>   
+        <input type="checkbox" id="playout" value="false">  
+        <label for="playout">Play Out</label>
         </div>
         <button id="playsound">Play Sound!</button>
         <button id="stopsound">Stop Sound!</button>

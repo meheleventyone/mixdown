@@ -9,8 +9,8 @@ export enum Priority {
 }
 
 export interface SoundLoop {
-    start : number;
-    end : number;
+    playIn : boolean;
+    playOut : boolean;
 }
 
 export interface SoundClip {
@@ -45,6 +45,7 @@ interface Voice {
     balance : StereoPannerNode;
     source : AudioBufferSourceNode;
     priority : Priority;
+    playOut : boolean;
 }
 
 interface Stream {
@@ -134,8 +135,6 @@ export class Mixdown {
 
         if (sound.loop) {
             source.loop = true;
-            source.loopStart = sound.loop.start;
-            source.loopEnd = sound.loop.end;
             if (sound.clip) {
                 source.loopStart = sound.clip.start;
                 source.loopEnd = sound.clip.end;
@@ -154,7 +153,7 @@ export class Mixdown {
         let start = 0;
         let duration = buffer.duration;
 
-        if (sound.clip) {
+        if (sound.clip && (!sound.loop || !sound.loop.playIn)) {
             duration = Math.max(0, sound.clip.end - sound.clip.start);
             start = sound.clip.start;
         }
@@ -162,10 +161,11 @@ export class Mixdown {
         if (!sound.loop) {
             source.start(0, start, duration);
         } else {
-            source.start();
+            source.start(0, start);
         }
     
-        let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sound.priority});
+        let playOut = sound.loop ? sound.loop.playOut : false
+        let handle = this.voices.add({gain : gain, balance : balance, source : source, priority : sound.priority, playOut: playOut});
 
         if (!handle) {
             return undefined;
@@ -240,7 +240,12 @@ export class Mixdown {
             return OperationResult.DOES_NOT_EXIST;
         }
 
-        voice.source.stop();
+        if (voice.source.loop && voice.playOut) {
+            this.stopLoop(index);
+        } else {
+            voice.source.stop();
+        }
+        
         return OperationResult.SUCCESS;
     }
 
