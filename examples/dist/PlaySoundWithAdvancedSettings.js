@@ -8,6 +8,12 @@ function gainChanged(event) {
         mixdown.gain(soundId, gain);
     }
 }
+function fadeGainChanged(event) {
+    fadeGain = getEventFloatValue(event);
+}
+function fadeDurationChanged(event) {
+    fadeDuration = getEventFloatValue(event);
+}
 function balanceChanged(event) {
     balance = getEventFloatValue(event);
     if (soundId) {
@@ -86,6 +92,18 @@ var loopPlayOutCheckbox = document.getElementById("playout");
 if (loopPlayOutCheckbox) {
     loopPlayOutCheckbox.addEventListener("input", loopPlayOutChanged);
 }
+var fadeButton = document.getElementById("fade");
+if (fadeButton) {
+    fadeButton.addEventListener("click", fade);
+}
+var fadeGainSlider = document.getElementById("fade_gain");
+if (fadeGainSlider) {
+    fadeGainSlider.addEventListener("input", fadeGainChanged);
+}
+var fadeDurationSlider = document.getElementById("fade_duration");
+if (fadeDurationSlider) {
+    fadeDurationSlider.addEventListener("input", fadeDurationChanged);
+}
 var mixdown = new Mixdown();
 var initialized = false;
 var buffer = undefined;
@@ -106,10 +124,9 @@ var clipEnd = 0;
 var loop = false;
 var playIn = false;
 var playOut = false;
+var fadeGain = 0;
+var fadeDuration = fadeDurationSlider ? parseFloat(fadeDurationSlider.value) : 0;
 function play() {
-    if (soundId) {
-        mixdown.isPlaying(soundId);
-    }
     if (!initialized || (soundId && mixdown.isPlaying(soundId))) {
         return;
     }
@@ -139,4 +156,16 @@ function stop() {
     }
     mixdown.stop(soundId);
     soundId = undefined;
+}
+function fade() {
+    if (!initialized) {
+        return;
+    }
+    if (!soundId || !mixdown.isPlaying(soundId)) {
+        play();
+    }
+    if (!soundId) {
+        return;
+    }
+    mixdown.fadeTo(soundId, fadeGain, fadeDuration);
 }

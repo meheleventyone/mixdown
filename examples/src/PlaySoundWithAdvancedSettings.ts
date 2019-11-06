@@ -11,6 +11,14 @@ function gainChanged(event : Event) {
     }
 }
 
+function fadeGainChanged(event : Event) {
+    fadeGain = getEventFloatValue(event);
+}
+
+function fadeDurationChanged(event : Event) {
+    fadeDuration = getEventFloatValue(event);
+}
+
 function balanceChanged(event : Event) {
     balance = getEventFloatValue(event);
     if (soundId) {
@@ -108,6 +116,21 @@ if (loopPlayOutCheckbox) {
     loopPlayOutCheckbox.addEventListener("input", loopPlayOutChanged);
 }
 
+const fadeButton = document.getElementById("fade");
+if (fadeButton) {
+    fadeButton.addEventListener("click", fade);
+}
+
+const fadeGainSlider = document.getElementById("fade_gain");
+if (fadeGainSlider) {
+    fadeGainSlider.addEventListener("input", fadeGainChanged);
+}
+
+const fadeDurationSlider = document.getElementById("fade_duration") as HTMLInputElement;
+if (fadeDurationSlider) {
+    fadeDurationSlider.addEventListener("input", fadeDurationChanged);
+}
+
 let mixdown = new Mixdown();
 let initialized = false;
 let buffer : AudioBuffer | undefined = undefined;
@@ -135,10 +158,10 @@ let loop = false;
 let playIn = false;
 let playOut = false;
 
+let fadeGain = 0;
+let fadeDuration = fadeDurationSlider ? parseFloat(fadeDurationSlider.value) : 0;
+
 function play() {
-    if (soundId) {
-        mixdown.isPlaying(soundId);
-    }
     if (!initialized || (soundId && mixdown.isPlaying(soundId))) {
         return;
     }
@@ -175,4 +198,20 @@ function stop() {
 
     mixdown.stop(soundId);
     soundId = undefined;
+}
+
+function fade() {
+    if (!initialized) {
+        return;
+    }
+
+    if (!soundId || !mixdown.isPlaying(soundId)) {
+        play();
+    }
+
+    if (!soundId) {
+        return;
+    }
+
+    mixdown.fadeTo(soundId, fadeGain, fadeDuration);
 }

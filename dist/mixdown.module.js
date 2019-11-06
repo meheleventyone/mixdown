@@ -261,6 +261,10 @@ class Mixdown {
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
+        // ramp dislikes stuff in the range of ±1.40130e-45, at least in chrome
+        if (value < 1.40130e-45) {
+            value = 0.001;
+        }
         element.gain.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
         return OperationResult.SUCCESS;
     }
