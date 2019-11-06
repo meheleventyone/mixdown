@@ -4,7 +4,7 @@ interface GenerationHandle {
 }
 declare class GenerationalArena<T> {
     generation: number[];
-    data: (T | null)[];
+    data: (T | undefined)[];
     freeList: number[];
     constructor(size: number);
     add(data: T): GenerationHandle | undefined;

@@ -9,13 +9,13 @@ export interface GenerationHandle {
 // arena
 export class GenerationalArena<T> {
     generation : number[] = [];
-    data : (T | null)[] = [];
+    data : (T | undefined)[] = [];
     freeList : number[] = [];
 
     constructor(size : number) {
         for (let i = 0; i < size; ++i) {
             this.generation[i] = 0;
-            this.data[i] = null;
+            this.data[i] = undefined;
             this.freeList.push(i);
         }
     }
@@ -36,17 +36,13 @@ export class GenerationalArena<T> {
         }
 
         let index = handle.index;
-        if (this.data[index] === null) {
-            return undefined;
-        }
-
-        return this.data[index] as T;
+        return this.data[index];
     }
 
     findFirst(test : (data : T) => boolean) : T | undefined {
         for (let i = 0; i < this.data.length; ++i) {
             let data = this.data[i];
-            if (data === null) {
+            if (data === undefined) {
                 continue;
             }
             
@@ -64,7 +60,7 @@ export class GenerationalArena<T> {
         }
         let index = handle.index;
         this.generation[index] += 1;
-        this.data[index] = null;
+        this.data[index] = undefined;
         this.freeList.push(index);
     }
 

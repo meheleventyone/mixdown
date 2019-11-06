@@ -107,7 +107,6 @@ export class Mixdown {
             case "music":
                 return this.playMusic(playable);
         }
-        return undefined;
     }
 
     playSound(sound : Sound) : VoiceGenerationHandle | undefined {
@@ -236,10 +235,6 @@ export class Mixdown {
             return OperationResult.DOES_NOT_EXIST;
         }
 
-        if (!voice.source) {
-            return OperationResult.DOES_NOT_EXIST;
-        }
-
         if (voice.source.loop && voice.playOut) {
             this.stopLoop(index);
         } else {
@@ -252,7 +247,7 @@ export class Mixdown {
     stopMusic(index : StreamGenerationHandle) : OperationResult {
         const stream = this.streams.get(index);
 
-        if (!stream || !stream.source || !stream.gain || !stream.balance) {
+        if (!stream) {
             return OperationResult.DOES_NOT_EXIST;
         }
 
@@ -322,7 +317,7 @@ export class Mixdown {
     gain(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
         let element = this.getElement(index);
 
-        if (!element || !element.gain) {
+        if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
 
@@ -333,7 +328,7 @@ export class Mixdown {
     balance(index : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
         let element = this.getElement(index);
 
-        if (!element || !element.balance) {
+        if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
 
@@ -386,15 +381,13 @@ export class Mixdown {
     private voiceEnded(handle : VoiceGenerationHandle) {
         let voice = this.voices.get(handle);
 
-        if (!voice || !voice.source || !voice.gain || !voice.balance) {
+        if (!voice) {
             return;
         }
 
         voice.source.disconnect();
         voice.source.buffer = null;
-
         voice.gain.disconnect();
-    
         voice.balance.disconnect();
         
         this.voices.remove(handle);
@@ -408,7 +401,7 @@ export class Mixdown {
         // (e.g. evict the quietest sound with the lowest priority)
         let voice = this.voices.findFirst((voice) => { return voice.priority < priority; });
 
-        if (voice === undefined || !voice.gain || !voice.source) {
+        if (!voice) {
             return false;
         }
 

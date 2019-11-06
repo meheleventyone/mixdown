@@ -8,7 +8,7 @@ class GenerationalArena {
         this.freeList = [];
         for (let i = 0; i < size; ++i) {
             this.generation[i] = 0;
-            this.data[i] = null;
+            this.data[i] = undefined;
             this.freeList.push(i);
         }
     }
@@ -25,15 +25,12 @@ class GenerationalArena {
             return undefined;
         }
         let index = handle.index;
-        if (this.data[index] === null) {
-            return undefined;
-        }
         return this.data[index];
     }
     findFirst(test) {
         for (let i = 0; i < this.data.length; ++i) {
             let data = this.data[i];
-            if (data === null) {
+            if (data === undefined) {
                 continue;
             }
             if (!test(data)) {
@@ -48,7 +45,7 @@ class GenerationalArena {
         }
         let index = handle.index;
         this.generation[index] += 1;
-        this.data[index] = null;
+        this.data[index] = undefined;
         this.freeList.push(index);
     }
     valid(handle) {
@@ -109,7 +106,6 @@ class Mixdown {
             case "music":
                 return this.playMusic(playable);
         }
-        return undefined;
     }
     playSound(sound) {
         const buffer = this.assetMap[sound.asset];
@@ -207,9 +203,6 @@ class Mixdown {
         if (!voice) {
             return OperationResult.DOES_NOT_EXIST;
         }
-        if (!voice.source) {
-            return OperationResult.DOES_NOT_EXIST;
-        }
         if (voice.source.loop && voice.playOut) {
             this.stopLoop(index);
         }
@@ -220,7 +213,7 @@ class Mixdown {
     }
     stopMusic(index) {
         const stream = this.streams.get(index);
-        if (!stream || !stream.source || !stream.gain || !stream.balance) {
+        if (!stream) {
             return OperationResult.DOES_NOT_EXIST;
         }
         stream.source.disconnect();
@@ -273,7 +266,7 @@ class Mixdown {
     }
     gain(index, value) {
         let element = this.getElement(index);
-        if (!element || !element.gain) {
+        if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
         element.gain.gain.setValueAtTime(value, this.context.currentTime);
@@ -281,7 +274,7 @@ class Mixdown {
     }
     balance(index, value) {
         let element = this.getElement(index);
-        if (!element || !element.balance) {
+        if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
         element.balance.pan.setValueAtTime(value, this.context.currentTime);
@@ -326,7 +319,7 @@ class Mixdown {
     }
     voiceEnded(handle) {
         let voice = this.voices.get(handle);
-        if (!voice || !voice.source || !voice.gain || !voice.balance) {
+        if (!voice) {
             return;
         }
         voice.source.disconnect();
@@ -342,7 +335,7 @@ class Mixdown {
         // in the future we might want this to be more heuristic based 
         // (e.g. evict the quietest sound with the lowest priority)
         let voice = this.voices.findFirst((voice) => { return voice.priority < priority; });
-        if (voice === undefined || !voice.gain || !voice.source) {
+        if (!voice) {
             return false;
         }
         const ctx = this.context;
