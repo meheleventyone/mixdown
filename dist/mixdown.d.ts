@@ -66,18 +66,34 @@ declare type VoiceGenerationHandle = {
 declare type StreamGenerationHandle = {
     kind: "stream";
 } & GenerationHandle;
+declare class Mixer {
+    context: AudioContext;
+    gainNode: GainNode;
+    parent: Mixer | undefined;
+    name: string;
+    constructor(context: AudioContext, name: string, parent?: Mixer | Mixdown);
+    connect(to: Mixer | Mixdown): void;
+    disconnect(): void;
+    gain(value: number): void;
+    fadeTo(value: number, duration: number): void;
+    fadeOut(duration: number): void;
+}
 declare class Mixdown {
     context: AudioContext;
     assetMap: Record<string, AudioBuffer | undefined>;
     maxSounds: number;
     slopSize: number;
-    masterGain: GainNode;
+    mixerMap: Record<string, Mixer | undefined>;
+    masterMixer: Mixer;
     voices: GenerationalArena<Voice>;
     streams: GenerationalArena<Stream>;
     removalFadeDuration: number;
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
     suspend(): void;
     resume(): void;
+    createMixer(name: string, parentTo?: Mixer): Mixer | undefined;
+    addMixer(mixer: Mixer): boolean;
+    getMixer(name: string): Mixer | undefined;
     play(playable: Playable): VoiceGenerationHandle | StreamGenerationHandle | undefined;
     playSound(sound: Sound): VoiceGenerationHandle | undefined;
     playMusic(music: Music): StreamGenerationHandle | undefined;
@@ -99,4 +115,4 @@ declare class Mixdown {
     private evictVoice;
 }
 
-export { Mixdown, Music, OperationResult, Playable, Priority, Sound, SoundClip, SoundLoop, StreamGenerationHandle, VoiceGenerationHandle };
+export { Mixdown, Mixer, Music, OperationResult, Playable, Priority, Sound, SoundClip, SoundLoop, StreamGenerationHandle, VoiceGenerationHandle };

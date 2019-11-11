@@ -58,12 +58,62 @@ interface Stream {
 export type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
 export type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
 
+export class Mixer {
+    context : AudioContext;
+    gainNode : GainNode;
+    parent : Mixer | undefined;
+    name : string;
+
+    constructor(context : AudioContext, name : string, parent? : Mixer | Mixdown) {
+        this.context = context;
+        this.gainNode = context.createGain();
+        this.name = name;
+        if (parent) {
+            this.connect(parent);
+        }
+    }
+
+    connect(to : Mixer | Mixdown) {
+        if (to instanceof Mixdown) {
+            to.masterMixer.connect(this);
+            return;
+        }
+
+        this.gainNode.connect(to.gainNode);
+    }
+
+    disconnect() {
+        this.gainNode.disconnect();
+    }
+
+    gain(value : number) {
+        this.gainNode.gain.setValueAtTime(value, this.context.currentTime);
+    }
+
+    fadeTo(value : number, duration : number) {
+        // ramp dislikes stuff in the range of ±1.40130e-45, at least in chrome
+        if (value < 1.40130e-45) {
+            value = 0.001;
+        }
+        this.gainNode.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
+    }
+
+    fadeOut(duration : number) {
+        this.fadeTo(0, duration);
+    }
+}
+
 export class Mixdown {
     context : AudioContext = new AudioContext();
+
     assetMap : Record<string, AudioBuffer | undefined> = {};
+
     maxSounds : number;
     slopSize : number;
-    masterGain : GainNode;
+
+    mixerMap : Record<string, Mixer | undefined> = {};
+    masterMixer : Mixer;
+
     voices : GenerationalArena<Voice>;
     streams : GenerationalArena<Stream>;
     removalFadeDuration : number = 0.2;
@@ -72,8 +122,8 @@ export class Mixdown {
         this.maxSounds = maxSounds;
         this.slopSize = slopSize;
 
-        this.masterGain = this.context.createGain()
-        this.masterGain.connect(this.context.destination);
+        this.masterMixer = new Mixer(this.context, "master");
+        this.masterMixer.gainNode.connect(this.context.destination);
 
         // technically we'll have more playing power than maxSounds would
         // suggest but will consider the voices and streams a union and never
@@ -98,6 +148,37 @@ export class Mixdown {
         }
 
         this.context.resume();
+    }
+
+    createMixer(name : string, parentTo? : Mixer) : Mixer | undefined {
+        if (this.mixerMap[name]) {
+            return undefined;
+        }
+
+        const parent = parentTo ?? this.masterMixer;
+        const mixer = this.mixerMap[name] =  new Mixer(this.context, name, parent);
+        return mixer;
+    }
+
+    addMixer(mixer : Mixer) : boolean {
+        if (mixer.context !== this.context) {
+            return false;
+        } 
+
+        if (this.mixerMap[mixer.name]) {
+            return false;
+        }
+
+        if (!mixer.parent) {
+            mixer.connect(this.masterMixer);
+        }
+
+        this.mixerMap[mixer.name] = mixer;
+        return true;
+    }
+
+    getMixer(name : string) : Mixer | undefined {
+        return this.mixerMap[name];
     }
 
     play(playable : Playable) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
@@ -147,7 +228,7 @@ export class Mixdown {
         balance.connect(gain);
 
         gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
-        gain.connect(this.masterGain);
+        gain.connect(this.masterMixer.gainNode);
 
         let start = 0;
         let duration = buffer.duration;
@@ -207,7 +288,7 @@ export class Mixdown {
         balance.connect(gain);
 
         gain.gain.setValueAtTime(music.gain, ctx.currentTime);
-        gain.connect(this.masterGain);
+        gain.connect(this.masterMixer.gainNode);
 
         let handle = this.streams.add({gain : gain, balance : balance, source : source, audio: audio});
 
