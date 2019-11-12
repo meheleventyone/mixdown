@@ -71,15 +71,49 @@ var OperationResult;
     OperationResult[OperationResult["SUCCESS"] = 0] = "SUCCESS";
     OperationResult[OperationResult["DOES_NOT_EXIST"] = 1] = "DOES_NOT_EXIST";
 })(OperationResult || (OperationResult = {}));
+class Mixer {
+    constructor(context, name, parent) {
+        this.context = context;
+        this.gainNode = context.createGain();
+        this.name = name;
+        if (parent) {
+            this.connect(parent);
+        }
+    }
+    connect(to) {
+        if (to instanceof Mixdown) {
+            to.masterMixer.connect(this);
+            return;
+        }
+        this.gainNode.connect(to.gainNode);
+    }
+    disconnect() {
+        this.gainNode.disconnect();
+    }
+    gain(value) {
+        this.gainNode.gain.setValueAtTime(value, this.context.currentTime);
+    }
+    fadeTo(value, duration) {
+        // ramp dislikes stuff in the range of ±1.40130e-45, at least in chrome
+        if (value < 1.40130e-45) {
+            value = 0.001;
+        }
+        this.gainNode.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
+    }
+    fadeOut(duration) {
+        this.fadeTo(0, duration);
+    }
+}
 class Mixdown {
     constructor(maxSounds = 32, maxStreams = 2, slopSize = 4) {
         this.context = new AudioContext();
         this.assetMap = {};
+        this.mixerMap = {};
         this.removalFadeDuration = 0.2;
         this.maxSounds = maxSounds;
         this.slopSize = slopSize;
-        this.masterGain = this.context.createGain();
-        this.masterGain.connect(this.context.destination);
+        this.masterMixer = new Mixer(this.context, "master");
+        this.masterMixer.gainNode.connect(this.context.destination);
         // technically we'll have more playing power than maxSounds would
         // suggest but will consider the voices and streams a union and never
         // exceed maxSounds things playing together
@@ -98,6 +132,30 @@ class Mixdown {
             return;
         }
         this.context.resume();
+    }
+    createMixer(name, parentTo) {
+        if (this.mixerMap[name]) {
+            return undefined;
+        }
+        const parent = (parentTo !== null && parentTo !== void 0 ? parentTo : this.masterMixer);
+        const mixer = this.mixerMap[name] = new Mixer(this.context, name, parent);
+        return mixer;
+    }
+    addMixer(mixer) {
+        if (mixer.context !== this.context) {
+            return false;
+        }
+        if (this.mixerMap[mixer.name]) {
+            return false;
+        }
+        if (!mixer.parent) {
+            mixer.connect(this.masterMixer);
+        }
+        this.mixerMap[mixer.name] = mixer;
+        return true;
+    }
+    getMixer(name) {
+        return this.mixerMap[name];
     }
     play(playable) {
         switch (playable.kind) {
@@ -137,7 +195,10 @@ class Mixdown {
         let gain = ctx.createGain();
         balance.connect(gain);
         gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
-        gain.connect(this.masterGain);
+        var mixer = sound.mixer ? this.getMixer(sound.mixer) : this.masterMixer;
+        if (mixer) {
+            gain.connect(mixer.gainNode);
+        }
         let start = 0;
         let duration = buffer.duration;
         if (sound.clip && (!sound.loop || !sound.loop.playIn)) {
@@ -182,7 +243,10 @@ class Mixdown {
         let gain = ctx.createGain();
         balance.connect(gain);
         gain.gain.setValueAtTime(music.gain, ctx.currentTime);
-        gain.connect(this.masterGain);
+        var mixer = music.mixer ? this.getMixer(music.mixer) : this.masterMixer;
+        if (mixer) {
+            gain.connect(mixer.gainNode);
+        }
         let handle = this.streams.add({ gain: gain, balance: balance, source: source, audio: audio });
         if (!handle) {
             return undefined;
@@ -346,4 +410,4 @@ class Mixdown {
     }
 }
 
-export { Mixdown, OperationResult, Priority };
+export { Mixdown, Mixer, OperationResult, Priority };
