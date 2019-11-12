@@ -2,6 +2,8 @@
 
 import {GenerationHandle, GenerationalArena} from "./GenerationalArena";
 
+// definitions
+
 export enum Priority {
     Low = 0,
     Medium,
@@ -18,22 +20,119 @@ export interface SoundClip {
     end : number;
 }
 
-export interface Sound {
+export interface SoundDefinition {
     kind : "sound";
     priority : Priority;
     asset : string;
     gain : number;
     loop? : SoundLoop;
     clip? : SoundClip;
+    mixer? : string;
 }
 
-export interface Music {
+export interface MusicDefinition {
     kind : "music";
     source : string;
     gain : number;
+    mixer? : string;
 }
 
-export type Playable = Sound | Music;
+export interface MixerDefinition {
+    kind : "mixer";
+    name : string;
+    gain : number;
+}
+
+export interface AssetDefinition {
+    kind : "asset";
+    source : string;
+}
+
+type Definable = AssetDefinition | SoundDefinition | MusicDefinition | MixerDefinition;
+
+// todo: can this be purely internal, I think so but lets see
+export class Bank {
+    assets : AssetDefinition[] = [];
+    sounds : SoundDefinition[] = [];
+    music  : MusicDefinition[] = [];
+    mixers : MixerDefinition[] = [];
+}
+
+export class BankBuilder {
+    add (name : string, definition : Definable) {
+        switch (definition.kind) {
+            case "asset":
+                this.addAssetDefinition(name, definition);
+                return;
+            case "mixer":
+                this.addMixerDefinition(name, definition);
+                return;
+            case "music":
+                this.addMusicDefinition(name, definition);
+                return;
+            case "sound":
+                this.addSoundDefinition(name, definition);
+                return;
+        }
+    }
+
+    addAssetDefinition (name : string, definition : AssetDefinition) {
+
+    }
+
+    addSoundDefinition (name : string, definition : SoundDefinition) {
+
+    }
+
+    addMusicDefinition (name : string, definition : MusicDefinition) {
+
+    }
+
+    addMixerDefinition (name : string, definition : MixerDefinition) {
+
+    }
+
+    createAssetDefinition (name : string, source : string) {
+        const asset : AssetDefinition = {kind: "asset", source: source};
+        this.addAssetDefinition(name, asset);
+    }
+
+    createSoundDefinition (name : string, priority : Priority, asset : string, gain : number, loop? : SoundLoop, clip? : SoundClip, mixer? : string) {
+        const sound : SoundDefinition = {
+            kind: "sound",
+            priority : priority,
+            asset : asset,
+            gain : gain,
+            loop : loop,
+            clip : clip,
+            mixer : mixer
+        };
+        this.addSoundDefinition(name, sound);
+    }
+
+    createMusicDefinition (name : string, source : string, gain : number, mixer? : string) {
+        const music : MusicDefinition = {
+            kind : "music",
+            source : source,
+            gain : gain,
+            mixer : mixer
+        };
+        this.addMusicDefinition(name, music);
+    }
+
+    createMixerDefinition (name : string, gain : number) {
+        const mixer : MixerDefinition = {
+            kind : "mixer",
+            name : name,
+            gain : gain
+        }
+        this.addMixerDefinition(name, mixer);
+    }
+}
+
+// runtime
+
+export type Playable = SoundDefinition | MusicDefinition;
 
 export enum OperationResult {
     SUCCESS = 0,
@@ -181,16 +280,16 @@ export class Mixdown {
         return this.mixerMap[name];
     }
 
-    play(playable : Playable) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
+    play(playable : Playable, optionalMixer? : string) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
         switch (playable.kind) {
             case "sound":
-                return this.playSound(playable);
+                return this.playSound(playable, optionalMixer);
             case "music":
-                return this.playMusic(playable);
+                return this.playMusic(playable, optionalMixer);
         }
     }
 
-    playSound(sound : Sound) : VoiceGenerationHandle | undefined {
+    playSound(sound : SoundDefinition, optionalMixer? : string) : VoiceGenerationHandle | undefined {
         const buffer = this.assetMap[sound.asset];
         
         if (!buffer) {
@@ -228,8 +327,13 @@ export class Mixdown {
         balance.connect(gain);
 
         gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
-        gain.connect(this.masterMixer.gainNode);
 
+        var mixerName = optionalMixer ?? sound.mixer;
+        var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
+        if (mixer) {
+            gain.connect(mixer.gainNode);
+        }
+        
         let start = 0;
         let duration = buffer.duration;
 
@@ -257,7 +361,7 @@ export class Mixdown {
         return voiceHandle;
     }
 
-    playMusic(music : Music) : StreamGenerationHandle | undefined {
+    playMusic(music : MusicDefinition, optionalMixer? : string) : StreamGenerationHandle | undefined {
         if (this.streams.numFreeSlots() === 0) {
             return undefined;
         }
@@ -288,7 +392,12 @@ export class Mixdown {
         balance.connect(gain);
 
         gain.gain.setValueAtTime(music.gain, ctx.currentTime);
-        gain.connect(this.masterMixer.gainNode);
+
+        var mixerName = optionalMixer ?? music.mixer;
+        var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
+        if (mixer) {
+            gain.connect(mixer.gainNode);
+        }
 
         let handle = this.streams.add({gain : gain, balance : balance, source : source, audio: audio});
 

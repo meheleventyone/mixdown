@@ -12,20 +12,49 @@ export interface SoundClip {
     start: number;
     end: number;
 }
-export interface Sound {
+export interface SoundDefinition {
     kind: "sound";
     priority: Priority;
     asset: string;
     gain: number;
     loop?: SoundLoop;
     clip?: SoundClip;
+    mixer?: string;
 }
-export interface Music {
+export interface MusicDefinition {
     kind: "music";
     source: string;
     gain: number;
+    mixer?: string;
 }
-export declare type Playable = Sound | Music;
+export interface MixerDefinition {
+    kind: "mixer";
+    name: string;
+    gain: number;
+}
+export interface AssetDefinition {
+    kind: "asset";
+    source: string;
+}
+declare type Definable = AssetDefinition | SoundDefinition | MusicDefinition | MixerDefinition;
+export declare class Bank {
+    assets: AssetDefinition[];
+    sounds: SoundDefinition[];
+    music: MusicDefinition[];
+    mixers: MixerDefinition[];
+}
+export declare class BankBuilder {
+    add(name: string, definition: Definable): void;
+    addAssetDefinition(name: string, definition: AssetDefinition): void;
+    addSoundDefinition(name: string, definition: SoundDefinition): void;
+    addMusicDefinition(name: string, definition: MusicDefinition): void;
+    addMixerDefinition(name: string, definition: MixerDefinition): void;
+    createAssetDefinition(name: string, source: string): void;
+    createSoundDefinition(name: string, priority: Priority, asset: string, gain: number, loop?: SoundLoop, clip?: SoundClip, mixer?: string): void;
+    createMusicDefinition(name: string, source: string, gain: number, mixer?: string): void;
+    createMixerDefinition(name: string, gain: number): void;
+}
+export declare type Playable = SoundDefinition | MusicDefinition;
 export declare enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST = 1
@@ -77,9 +106,9 @@ export declare class Mixdown {
     createMixer(name: string, parentTo?: Mixer): Mixer | undefined;
     addMixer(mixer: Mixer): boolean;
     getMixer(name: string): Mixer | undefined;
-    play(playable: Playable): VoiceGenerationHandle | StreamGenerationHandle | undefined;
-    playSound(sound: Sound): VoiceGenerationHandle | undefined;
-    playMusic(music: Music): StreamGenerationHandle | undefined;
+    play(playable: Playable, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
+    playSound(sound: SoundDefinition, optionalMixer?: string): VoiceGenerationHandle | undefined;
+    playMusic(music: MusicDefinition, optionalMixer?: string): StreamGenerationHandle | undefined;
     stop(index: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
     stopSound(index: VoiceGenerationHandle): OperationResult;
     stopMusic(index: StreamGenerationHandle): OperationResult;

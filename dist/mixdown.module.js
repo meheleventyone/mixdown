@@ -60,12 +60,81 @@ class GenerationalArena {
 }
 
 // A Web Audio based mixer for games.
+// definitions
 var Priority;
 (function (Priority) {
     Priority[Priority["Low"] = 0] = "Low";
     Priority[Priority["Medium"] = 1] = "Medium";
     Priority[Priority["High"] = 2] = "High";
 })(Priority || (Priority = {}));
+// todo: can this be purely internal, I think so but lets see
+class Bank {
+    constructor() {
+        this.assets = [];
+        this.sounds = [];
+        this.music = [];
+        this.mixers = [];
+    }
+}
+class BankBuilder {
+    add(name, definition) {
+        switch (definition.kind) {
+            case "asset":
+                this.addAssetDefinition(name, definition);
+                return;
+            case "mixer":
+                this.addMixerDefinition(name, definition);
+                return;
+            case "music":
+                this.addMusicDefinition(name, definition);
+                return;
+            case "sound":
+                this.addSoundDefinition(name, definition);
+                return;
+        }
+    }
+    addAssetDefinition(name, definition) {
+    }
+    addSoundDefinition(name, definition) {
+    }
+    addMusicDefinition(name, definition) {
+    }
+    addMixerDefinition(name, definition) {
+    }
+    createAssetDefinition(name, source) {
+        const asset = { kind: "asset", source: source };
+        this.addAssetDefinition(name, asset);
+    }
+    createSoundDefinition(name, priority, asset, gain, loop, clip, mixer) {
+        const sound = {
+            kind: "sound",
+            priority: priority,
+            asset: asset,
+            gain: gain,
+            loop: loop,
+            clip: clip,
+            mixer: mixer
+        };
+        this.addSoundDefinition(name, sound);
+    }
+    createMusicDefinition(name, source, gain, mixer) {
+        const music = {
+            kind: "music",
+            source: source,
+            gain: gain,
+            mixer: mixer
+        };
+        this.addMusicDefinition(name, music);
+    }
+    createMixerDefinition(name, gain) {
+        const mixer = {
+            kind: "mixer",
+            name: name,
+            gain: gain
+        };
+        this.addMixerDefinition(name, mixer);
+    }
+}
 var OperationResult;
 (function (OperationResult) {
     OperationResult[OperationResult["SUCCESS"] = 0] = "SUCCESS";
@@ -157,15 +226,15 @@ class Mixdown {
     getMixer(name) {
         return this.mixerMap[name];
     }
-    play(playable) {
+    play(playable, optionalMixer) {
         switch (playable.kind) {
             case "sound":
-                return this.playSound(playable);
+                return this.playSound(playable, optionalMixer);
             case "music":
-                return this.playMusic(playable);
+                return this.playMusic(playable, optionalMixer);
         }
     }
-    playSound(sound) {
+    playSound(sound, optionalMixer) {
         const buffer = this.assetMap[sound.asset];
         if (!buffer) {
             return undefined;
@@ -195,7 +264,11 @@ class Mixdown {
         let gain = ctx.createGain();
         balance.connect(gain);
         gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
-        gain.connect(this.masterMixer.gainNode);
+        var mixerName = (optionalMixer !== null && optionalMixer !== void 0 ? optionalMixer : sound.mixer);
+        var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
+        if (mixer) {
+            gain.connect(mixer.gainNode);
+        }
         let start = 0;
         let duration = buffer.duration;
         if (sound.clip && (!sound.loop || !sound.loop.playIn)) {
@@ -217,7 +290,7 @@ class Mixdown {
         source.onended = () => { this.voiceEnded(voiceHandle); };
         return voiceHandle;
     }
-    playMusic(music) {
+    playMusic(music, optionalMixer) {
         if (this.streams.numFreeSlots() === 0) {
             return undefined;
         }
@@ -240,7 +313,11 @@ class Mixdown {
         let gain = ctx.createGain();
         balance.connect(gain);
         gain.gain.setValueAtTime(music.gain, ctx.currentTime);
-        gain.connect(this.masterMixer.gainNode);
+        var mixerName = (optionalMixer !== null && optionalMixer !== void 0 ? optionalMixer : music.mixer);
+        var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
+        if (mixer) {
+            gain.connect(mixer.gainNode);
+        }
         let handle = this.streams.add({ gain: gain, balance: balance, source: source, audio: audio });
         if (!handle) {
             return undefined;
@@ -404,4 +481,4 @@ class Mixdown {
     }
 }
 
-export { Mixdown, Mixer, OperationResult, Priority };
+export { Bank, BankBuilder, Mixdown, Mixer, OperationResult, Priority };
