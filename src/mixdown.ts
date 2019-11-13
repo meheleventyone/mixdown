@@ -20,7 +20,11 @@ export interface SoundClip {
     end : number;
 }
 
-export interface SoundDefinition {
+interface Definition {
+    name : string;
+}
+
+export interface SoundDefinition extends Definition {
     kind : "sound";
     priority : Priority;
     asset : string;
@@ -30,20 +34,20 @@ export interface SoundDefinition {
     mixer? : string;
 }
 
-export interface MusicDefinition {
+export interface MusicDefinition extends Definition {
     kind : "music";
     source : string;
     gain : number;
     mixer? : string;
 }
 
-export interface MixerDefinition {
+export interface MixerDefinition extends Definition {
     kind : "mixer";
     name : string;
     gain : number;
 }
 
-export interface AssetDefinition {
+export interface AssetDefinition extends Definition {
     kind : "asset";
     source : string;
 }
@@ -56,50 +60,67 @@ export class Bank {
     sounds : SoundDefinition[] = [];
     music  : MusicDefinition[] = [];
     mixers : MixerDefinition[] = [];
+
+    get(name : string) : Definable | undefined {
+
+    }
+
+    getAssetDefinition (name : string) : AssetDefinition | undefined {
+
+    }
+
+    getSoundDefinition (name : string) : SoundDefinition | undefined {
+        
+    }
+
+    getMusicDefinition (name : string) : MusicDefinition | undefined {
+        
+    }
+
+    getMixerDefinition (name : string) : MixerDefinition | undefined {
+        
+    }
 }
 
 export class BankBuilder {
-    add (name : string, definition : Definable) {
-        switch (definition.kind) {
+    bank : Bank;
+
+    constructor () {
+        this.bank = new Bank();
+    }
+
+    private getBank(definition : Definable) : Definable[] | undefined {
+        switch(definition.kind) {
             case "asset":
-                this.addAssetDefinition(name, definition);
-                return;
+                return this.bank.assets;
             case "mixer":
-                this.addMixerDefinition(name, definition);
-                return;
+                return this.bank.mixers;
             case "music":
-                this.addMusicDefinition(name, definition);
-                return;
+                return this.bank.music;
             case "sound":
-                this.addSoundDefinition(name, definition);
-                return;
+                return this.bank.sounds;
         }
     }
 
-    addAssetDefinition (name : string, definition : AssetDefinition) {
-
-    }
-
-    addSoundDefinition (name : string, definition : SoundDefinition) {
-
-    }
-
-    addMusicDefinition (name : string, definition : MusicDefinition) {
-
-    }
-
-    addMixerDefinition (name : string, definition : MixerDefinition) {
-
+    add(definition : Definable) {
+        var definitionStore = this.getBank(definition);
+        var index = definitionStore?.findIndex((item) => item.name === definition.name);
+        if (index !== -1) {
+            console.warn("Attempting to add existing name {} as a {}.", definition.name, definition.kind);
+            return;
+        }
+        definitionStore?.push(definition);
     }
 
     createAssetDefinition (name : string, source : string) {
-        const asset : AssetDefinition = {kind: "asset", source: source};
-        this.addAssetDefinition(name, asset);
+        const asset : AssetDefinition = {kind: "asset", name: name, source: source};
+        this.add(asset);
     }
 
     createSoundDefinition (name : string, priority : Priority, asset : string, gain : number, loop? : SoundLoop, clip? : SoundClip, mixer? : string) {
         const sound : SoundDefinition = {
             kind: "sound",
+            name: name,
             priority : priority,
             asset : asset,
             gain : gain,
@@ -107,17 +128,18 @@ export class BankBuilder {
             clip : clip,
             mixer : mixer
         };
-        this.addSoundDefinition(name, sound);
+        this.add(sound);
     }
 
     createMusicDefinition (name : string, source : string, gain : number, mixer? : string) {
         const music : MusicDefinition = {
             kind : "music",
+            name : name,
             source : source,
             gain : gain,
             mixer : mixer
         };
-        this.addMusicDefinition(name, music);
+        this.add(music);
     }
 
     createMixerDefinition (name : string, gain : number) {
@@ -126,7 +148,7 @@ export class BankBuilder {
             name : name,
             gain : gain
         }
-        this.addMixerDefinition(name, mixer);
+        this.add(mixer);
     }
 }
 
