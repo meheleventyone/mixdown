@@ -3,7 +3,6 @@
 import {GenerationHandle, GenerationalArena} from "./GenerationalArena";
 
 // definitions
-
 export enum Priority {
     Low = 0,
     Medium,
@@ -44,6 +43,7 @@ export interface MusicDefinition extends Definition {
 export interface MixerDefinition extends Definition {
     kind : "mixer";
     name : string;
+    parent : string;
     gain : number;
 }
 
@@ -62,23 +62,26 @@ export class Bank {
     mixers : MixerDefinition[] = [];
 
     get(name : string) : Definable | undefined {
-
+        return this.getAssetDefinition(name) ?? 
+               this.getSoundDefinition(name) ?? 
+               this.getMusicDefinition(name) ?? 
+               this.getMixerDefinition(name) ?? undefined;
     }
 
     getAssetDefinition (name : string) : AssetDefinition | undefined {
-
+        return this.assets.find((item) => item.name === name);
     }
 
     getSoundDefinition (name : string) : SoundDefinition | undefined {
-        
+        return this.sounds.find((item) => item.name === name);
     }
 
     getMusicDefinition (name : string) : MusicDefinition | undefined {
-        
+        return this.music.find((item) => item.name === name);
     }
 
     getMixerDefinition (name : string) : MixerDefinition | undefined {
-        
+        return this.mixers.find((item) => item.name === name);
     }
 }
 
@@ -103,10 +106,10 @@ export class BankBuilder {
     }
 
     add(definition : Definable) {
-        var definitionStore = this.getBank(definition);
-        var index = definitionStore?.findIndex((item) => item.name === definition.name);
+        const definitionStore = this.getBank(definition);
+        const index = definitionStore?.findIndex((item) => item.name === definition.name);
         if (index !== -1) {
-            console.warn("Attempting to add existing name {} as a {}.", definition.name, definition.kind);
+            console.warn("Attempting to add existing name %s as a %s", definition.name, definition.kind);
             return;
         }
         definitionStore?.push(definition);
@@ -142,13 +145,67 @@ export class BankBuilder {
         this.add(music);
     }
 
-    createMixerDefinition (name : string, gain : number) {
+    createMixerDefinition (name : string, gain : number, parent? : string) {
         const mixer : MixerDefinition = {
             kind : "mixer",
             name : name,
+            parent : parent ?? "master",
             gain : gain
         }
         this.add(mixer);
+    }
+
+    validate () : boolean {
+        let valid = true;
+
+        // check all sounds reference valid asset names
+        // and valid mixers
+        for (let i = 0; i < this.bank.sounds.length; ++i) {
+            const soundDef = this.bank.sounds[i];
+            const assetDef = this.bank.getAssetDefinition(soundDef.asset);
+            if (!assetDef) {
+                console.warn("Bank Validation Issue: Sound %s references missing Asset %s", soundDef.name, soundDef.asset);
+                valid = false;
+            }
+
+            if (!soundDef.mixer) {
+                break;
+            }
+
+            const mixerDef = this.bank.getMixerDefinition(soundDef.mixer);
+            if (!mixerDef) {
+                console.warn("Bank Validation Issue: Sound %s references missing Mixer %s", soundDef.name, soundDef.mixer);
+                valid = false;                
+            }
+        }
+
+        // check mixers are valid
+        for (let i = 0; i < this.bank.music.length; ++i) {
+            const musicDef = this.bank.music[i];
+
+            if (!musicDef.mixer) {
+                break;
+            }
+
+            const mixerDef = this.bank.getMixerDefinition(musicDef.mixer);
+            if (!mixerDef) {
+                console.warn("Bank Validation Issue: Music %s references missing Mixer %s", musicDef.name, musicDef.mixer);
+                valid = false;                
+            }
+        }
+
+        // check parents are valid
+        for (let i = 0; i < this.bank.mixers.length; ++i) {
+            const mixerDef = this.bank.mixers[i];
+
+            const parentDef = this.bank.getMixerDefinition(mixerDef.parent);
+            if (!parentDef && mixerDef.parent !== "master") {
+                console.warn("Bank Validation Issue: Mixer %s references missing parent Mixer %s", mixerDef.name, mixerDef.parent);
+                valid = false;                
+            }
+        }
+
+        return valid;
     }
 }
 
@@ -227,6 +284,7 @@ export class Mixer {
 export class Mixdown {
     context : AudioContext = new AudioContext();
 
+    bank : Bank | undefined;
     assetMap : Record<string, AudioBuffer | undefined> = {};
 
     maxSounds : number;
@@ -251,6 +309,19 @@ export class Mixdown {
         // exceed maxSounds things playing together
         this.voices = new GenerationalArena(maxSounds);
         this.streams = new GenerationalArena(maxStreams);
+    }
+
+    loadBank (builder : BankBuilder)  {
+        if (this.bank) {
+            // todo unload current bank
+        }
+
+        if (!builder.validate()) {
+            return;
+        }
+
+        // todo populate mixers
+        // todo load assets and return promise   
     }
 
     suspend() {

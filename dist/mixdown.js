@@ -79,39 +79,57 @@
             this.music = [];
             this.mixers = [];
         }
+        get(name) {
+            var _a, _b, _c, _d;
+            return _d = (_c = (_b = (_a = this.getAssetDefinition(name), (_a !== null && _a !== void 0 ? _a : this.getSoundDefinition(name))), (_b !== null && _b !== void 0 ? _b : this.getMusicDefinition(name))), (_c !== null && _c !== void 0 ? _c : this.getMixerDefinition(name))), (_d !== null && _d !== void 0 ? _d : undefined);
+        }
+        getAssetDefinition(name) {
+            return this.assets.find((item) => item.name === name);
+        }
+        getSoundDefinition(name) {
+            return this.sounds.find((item) => item.name === name);
+        }
+        getMusicDefinition(name) {
+            return this.music.find((item) => item.name === name);
+        }
+        getMixerDefinition(name) {
+            return this.mixers.find((item) => item.name === name);
+        }
     }
     class BankBuilder {
-        add(name, definition) {
+        constructor() {
+            this.bank = new Bank();
+        }
+        getBank(definition) {
             switch (definition.kind) {
                 case "asset":
-                    this.addAssetDefinition(name, definition);
-                    return;
+                    return this.bank.assets;
                 case "mixer":
-                    this.addMixerDefinition(name, definition);
-                    return;
+                    return this.bank.mixers;
                 case "music":
-                    this.addMusicDefinition(name, definition);
-                    return;
+                    return this.bank.music;
                 case "sound":
-                    this.addSoundDefinition(name, definition);
-                    return;
+                    return this.bank.sounds;
             }
         }
-        addAssetDefinition(name, definition) {
-        }
-        addSoundDefinition(name, definition) {
-        }
-        addMusicDefinition(name, definition) {
-        }
-        addMixerDefinition(name, definition) {
+        add(definition) {
+            var _a, _b;
+            const definitionStore = this.getBank(definition);
+            const index = (_a = definitionStore) === null || _a === void 0 ? void 0 : _a.findIndex((item) => item.name === definition.name);
+            if (index !== -1) {
+                console.warn("Attempting to add existing name %s as a %s", definition.name, definition.kind);
+                return;
+            }
+            (_b = definitionStore) === null || _b === void 0 ? void 0 : _b.push(definition);
         }
         createAssetDefinition(name, source) {
-            const asset = { kind: "asset", source: source };
-            this.addAssetDefinition(name, asset);
+            const asset = { kind: "asset", name: name, source: source };
+            this.add(asset);
         }
         createSoundDefinition(name, priority, asset, gain, loop, clip, mixer) {
             const sound = {
                 kind: "sound",
+                name: name,
                 priority: priority,
                 asset: asset,
                 gain: gain,
@@ -119,24 +137,69 @@
                 clip: clip,
                 mixer: mixer
             };
-            this.addSoundDefinition(name, sound);
+            this.add(sound);
         }
         createMusicDefinition(name, source, gain, mixer) {
             const music = {
                 kind: "music",
+                name: name,
                 source: source,
                 gain: gain,
                 mixer: mixer
             };
-            this.addMusicDefinition(name, music);
+            this.add(music);
         }
-        createMixerDefinition(name, gain) {
+        createMixerDefinition(name, gain, parent) {
             const mixer = {
                 kind: "mixer",
                 name: name,
+                parent: (parent !== null && parent !== void 0 ? parent : "master"),
                 gain: gain
             };
-            this.addMixerDefinition(name, mixer);
+            this.add(mixer);
+        }
+        validate() {
+            let valid = true;
+            // check all sounds reference valid asset names
+            // and valid mixers
+            for (let i = 0; i < this.bank.sounds.length; ++i) {
+                const soundDef = this.bank.sounds[i];
+                const assetDef = this.bank.getAssetDefinition(soundDef.asset);
+                if (!assetDef) {
+                    console.warn("Bank Validation Issue: Sound %s references missing Asset %s", soundDef.name, soundDef.asset);
+                    valid = false;
+                }
+                if (!soundDef.mixer) {
+                    break;
+                }
+                const mixerDef = this.bank.getMixerDefinition(soundDef.mixer);
+                if (!mixerDef) {
+                    console.warn("Bank Validation Issue: Sound %s references missing Mixer %s", soundDef.name, soundDef.mixer);
+                    valid = false;
+                }
+            }
+            // check mixers are valid
+            for (let i = 0; i < this.bank.music.length; ++i) {
+                const musicDef = this.bank.music[i];
+                if (!musicDef.mixer) {
+                    break;
+                }
+                const mixerDef = this.bank.getMixerDefinition(musicDef.mixer);
+                if (!mixerDef) {
+                    console.warn("Bank Validation Issue: Music %s references missing Mixer %s", musicDef.name, musicDef.mixer);
+                    valid = false;
+                }
+            }
+            // check parents are valid
+            for (let i = 0; i < this.bank.mixers.length; ++i) {
+                const mixerDef = this.bank.mixers[i];
+                const parentDef = this.bank.getMixerDefinition(mixerDef.parent);
+                if (!parentDef && mixerDef.parent !== "master") {
+                    console.warn("Bank Validation Issue: Mixer %s references missing parent Mixer %s", mixerDef.name, mixerDef.parent);
+                    valid = false;
+                }
+            }
+            return valid;
         }
     }
     (function (OperationResult) {
@@ -191,6 +254,14 @@
             // exceed maxSounds things playing together
             this.voices = new GenerationalArena(maxSounds);
             this.streams = new GenerationalArena(maxStreams);
+        }
+        loadBank(builder) {
+            if (this.bank) ;
+            if (!builder.validate()) {
+                return;
+            }
+            // todo populate mixers
+            // todo load assets and return promise   
         }
         suspend() {
             if (this.context.state === "suspended") {

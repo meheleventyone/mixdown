@@ -29,7 +29,10 @@ interface SoundClip {
     start: number;
     end: number;
 }
-interface SoundDefinition {
+interface Definition {
+    name: string;
+}
+interface SoundDefinition extends Definition {
     kind: "sound";
     priority: Priority;
     asset: string;
@@ -38,18 +41,19 @@ interface SoundDefinition {
     clip?: SoundClip;
     mixer?: string;
 }
-interface MusicDefinition {
+interface MusicDefinition extends Definition {
     kind: "music";
     source: string;
     gain: number;
     mixer?: string;
 }
-interface MixerDefinition {
+interface MixerDefinition extends Definition {
     kind: "mixer";
     name: string;
+    parent: string;
     gain: number;
 }
-interface AssetDefinition {
+interface AssetDefinition extends Definition {
     kind: "asset";
     source: string;
 }
@@ -59,17 +63,22 @@ declare class Bank {
     sounds: SoundDefinition[];
     music: MusicDefinition[];
     mixers: MixerDefinition[];
+    get(name: string): Definable | undefined;
+    getAssetDefinition(name: string): AssetDefinition | undefined;
+    getSoundDefinition(name: string): SoundDefinition | undefined;
+    getMusicDefinition(name: string): MusicDefinition | undefined;
+    getMixerDefinition(name: string): MixerDefinition | undefined;
 }
 declare class BankBuilder {
-    add(name: string, definition: Definable): void;
-    addAssetDefinition(name: string, definition: AssetDefinition): void;
-    addSoundDefinition(name: string, definition: SoundDefinition): void;
-    addMusicDefinition(name: string, definition: MusicDefinition): void;
-    addMixerDefinition(name: string, definition: MixerDefinition): void;
+    bank: Bank;
+    constructor();
+    private getBank;
+    add(definition: Definable): void;
     createAssetDefinition(name: string, source: string): void;
     createSoundDefinition(name: string, priority: Priority, asset: string, gain: number, loop?: SoundLoop, clip?: SoundClip, mixer?: string): void;
     createMusicDefinition(name: string, source: string, gain: number, mixer?: string): void;
-    createMixerDefinition(name: string, gain: number): void;
+    createMixerDefinition(name: string, gain: number, parent?: string): void;
+    validate(): boolean;
 }
 declare type Playable = SoundDefinition | MusicDefinition;
 declare enum OperationResult {
@@ -109,6 +118,7 @@ declare class Mixer {
 }
 declare class Mixdown {
     context: AudioContext;
+    bank: Bank | undefined;
     assetMap: Record<string, AudioBuffer | undefined>;
     maxSounds: number;
     slopSize: number;
@@ -118,6 +128,7 @@ declare class Mixdown {
     streams: GenerationalArena<Stream>;
     removalFadeDuration: number;
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
+    loadBank(builder: BankBuilder): void;
     suspend(): void;
     resume(): void;
     createMixer(name: string, parentTo?: Mixer): Mixer | undefined;
