@@ -189,8 +189,11 @@ class BankBuilder {
         // check parents are valid
         for (let i = 0; i < this.bank.mixers.length; ++i) {
             const mixerDef = this.bank.mixers[i];
+            if (!mixerDef.parent) {
+                continue;
+            }
             const parentDef = this.bank.getMixerDefinition(mixerDef.parent);
-            if (!parentDef && mixerDef.parent !== "master") {
+            if (!parentDef) {
                 console.warn("Bank Validation Issue: Mixer %s references missing parent Mixer %s", mixerDef.name, mixerDef.parent);
                 valid = false;
             }
@@ -198,6 +201,10 @@ class BankBuilder {
         return valid;
     }
 }
+var LoadBankError;
+(function (LoadBankError) {
+    LoadBankError[LoadBankError["BANK_VALIDATION_FAIL"] = 0] = "BANK_VALIDATION_FAIL";
+})(LoadBankError || (LoadBankError = {}));
 var OperationResult;
 (function (OperationResult) {
     OperationResult[OperationResult["SUCCESS"] = 0] = "SUCCESS";
@@ -252,19 +259,73 @@ class Mixdown {
         this.voices = new GenerationalArena(maxSounds);
         this.streams = new GenerationalArena(maxStreams);
     }
+    loadAsset(name, path) {
+        // todo: make sure we're loading something we support
+        // todo: xmlhttprequest for backwards compat?
+        return new Promise((resolve, reject) => {
+            fetch(path)
+                .then(response => response.arrayBuffer())
+                .then(data => this.context.decodeAudioData(data))
+                .then(buffer => {
+                this.assetMap[name] = buffer;
+                resolve(true);
+            })
+                .catch(error => {
+                console.log(error);
+                reject(false);
+            });
+        });
+    }
+    unloadBank() {
+        var _a;
+        if (!this.bank) {
+            return;
+        }
+        this.stopAll();
+        this.assetMap = {};
+        var mixerNames = Object.keys(this.mixerMap);
+        for (let i = 0; i < mixerNames.length; ++i) {
+            (_a = this.mixerMap[mixerNames[i]]) === null || _a === void 0 ? void 0 : _a.disconnect();
+        }
+        this.mixerMap = {};
+        this.bank = undefined;
+    }
     loadBank(builder) {
         if (this.bank) ;
         if (!builder.validate()) {
-            return;
+            return LoadBankError.BANK_VALIDATION_FAIL;
         }
-        // todo populate mixers
-        // todo load assets and return promise   
+        this.bank = builder.bank;
+        // first pass instantiate all the mixers
+        for (let i = 0; i < this.bank.mixers.length; ++i) {
+            const mixerDef = this.bank.mixers[i];
+            const mixer = new Mixer(this.context, mixerDef.name);
+            mixer.gain(mixerDef.gain);
+            this.mixerMap[mixerDef.name] = mixer;
+        }
+        // second pass hook up the parenting graph
+        for (let i = 0; i < this.bank.mixers.length; ++i) {
+            const mixerDef = this.bank.mixers[i];
+            const mixer = this.getMixer(mixerDef.name);
+            const parent = mixerDef.parent ? this.getMixer(mixerDef.parent) : this.masterMixer;
+            if (!mixer || !parent) {
+                continue;
+            }
+            mixer.connect(parent);
+        }
+        var assetPromises = [];
+        for (let i = 0; i < this.bank.assets.length; ++i) {
+            var assetDef = this.bank.assets[i];
+            var promise = this.loadAsset(assetDef.name, assetDef.source);
+            assetPromises.push(promise);
+        }
+        return Promise.all(assetPromises);
     }
     suspend() {
         if (this.context.state === "suspended") {
             return;
         }
-        // todo: kill active sounds
+        this.stopAll();
         this.context.suspend();
     }
     resume() {
@@ -272,14 +333,6 @@ class Mixdown {
             return;
         }
         this.context.resume();
-    }
-    createMixer(name, parentTo) {
-        if (this.mixerMap[name]) {
-            return undefined;
-        }
-        const parent = (parentTo !== null && parentTo !== void 0 ? parentTo : this.masterMixer);
-        const mixer = this.mixerMap[name] = new Mixer(this.context, name, parent);
-        return mixer;
     }
     addMixer(mixer) {
         if (mixer.context !== this.context) {
@@ -396,6 +449,9 @@ class Mixdown {
         let streamHandle = { kind: "stream", index: handle.index, generation: handle.generation };
         return streamHandle;
     }
+    stopAll() {
+        // todo implement
+    }
     stop(index) {
         if (index.kind === "voice") {
             return this.stopSound(index);
@@ -486,23 +542,6 @@ class Mixdown {
         element.balance.pan.setValueAtTime(value, this.context.currentTime);
         return OperationResult.SUCCESS;
     }
-    loadAsset(name, path) {
-        // todo: make sure we're loading something we support
-        // todo: xmlhttprequest for backwards compat?
-        return new Promise((resolve, reject) => {
-            fetch(path)
-                .then(response => response.arrayBuffer())
-                .then(data => this.context.decodeAudioData(data))
-                .then(buffer => {
-                this.assetMap[name] = buffer;
-                resolve(true);
-            })
-                .catch(error => {
-                console.log(error);
-                reject(false);
-            });
-        });
-    }
     numFreeSlots() {
         return this.voices.numFreeSlots() - this.streams.numUsedSlots();
     }
@@ -552,4 +591,4 @@ class Mixdown {
     }
 }
 
-export { Bank, BankBuilder, Mixdown, Mixer, OperationResult, Priority };
+export { Bank, BankBuilder, LoadBankError, Mixdown, Mixer, OperationResult, Priority };

@@ -33,8 +33,8 @@ export interface MusicDefinition extends Definition {
 export interface MixerDefinition extends Definition {
     kind: "mixer";
     name: string;
-    parent: string;
     gain: number;
+    parent?: string;
 }
 export interface AssetDefinition extends Definition {
     kind: "asset";
@@ -64,6 +64,9 @@ export declare class BankBuilder {
     validate(): boolean;
 }
 export declare type Playable = SoundDefinition | MusicDefinition;
+export declare enum LoadBankError {
+    BANK_VALIDATION_FAIL = 0
+}
 export declare enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST = 1
@@ -111,15 +114,17 @@ export declare class Mixdown {
     streams: GenerationalArena<Stream>;
     removalFadeDuration: number;
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
-    loadBank(builder: BankBuilder): void;
+    loadAsset(name: string, path: string): Promise<boolean>;
+    unloadBank(): void;
+    loadBank(builder: BankBuilder): Promise<boolean[]> | LoadBankError;
     suspend(): void;
     resume(): void;
-    createMixer(name: string, parentTo?: Mixer): Mixer | undefined;
     addMixer(mixer: Mixer): boolean;
     getMixer(name: string): Mixer | undefined;
     play(playable: Playable, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
     playSound(sound: SoundDefinition, optionalMixer?: string): VoiceGenerationHandle | undefined;
     playMusic(music: MusicDefinition, optionalMixer?: string): StreamGenerationHandle | undefined;
+    stopAll(): void;
     stop(index: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
     stopSound(index: VoiceGenerationHandle): OperationResult;
     stopMusic(index: StreamGenerationHandle): OperationResult;
@@ -129,7 +134,6 @@ export declare class Mixdown {
     fadeOut(index: VoiceGenerationHandle | StreamGenerationHandle, duration: number): OperationResult;
     gain(index: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
     balance(index: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
-    loadAsset(name: string, path: string): Promise<boolean>;
     numFreeSlots(): number;
     getBuffer(assetName: string): AudioBuffer | undefined;
     isPlaying(index: VoiceGenerationHandle | StreamGenerationHandle): boolean;
