@@ -291,7 +291,7 @@ class Mixdown {
         this.bank = undefined;
     }
     loadBank(builder) {
-        if (this.bank) ;
+        this.unloadBank();
         if (!builder.validate()) {
             return LoadBankError.BANK_VALIDATION_FAIL;
         }
@@ -450,7 +450,27 @@ class Mixdown {
         return streamHandle;
     }
     stopAll() {
-        // todo implement
+        const numVoices = this.voices.data.length;
+        for (let i = 0; i < numVoices; ++i) {
+            let voice = this.voices.data[i];
+            if (!voice) {
+                continue;
+            }
+            voice.source.stop();
+        }
+        const numStreams = this.streams.data.length;
+        for (let i = 0; i < numStreams; ++i) {
+            var handle = { index: i, generation: this.streams.generation[i] };
+            let stream = this.streams.get(handle);
+            if (!stream) {
+                continue;
+            }
+            stream.source.disconnect();
+            stream.gain.disconnect();
+            stream.balance.disconnect();
+            stream.audio.pause();
+            this.streams.remove(handle);
+        }
     }
     stop(index) {
         if (index.kind === "voice") {
