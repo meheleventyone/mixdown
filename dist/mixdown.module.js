@@ -350,15 +350,48 @@ class Mixdown {
     getMixer(name) {
         return this.mixerMap[name];
     }
-    play(playable, optionalMixer) {
+    getSoundDef(name) {
+        var _a;
+        return (_a = this.bank) === null || _a === void 0 ? void 0 : _a.getSoundDefinition(name);
+    }
+    getMusicDef(name) {
+        var _a;
+        return (_a = this.bank) === null || _a === void 0 ? void 0 : _a.getMusicDefinition(name);
+    }
+    play(name, optionalMixer) {
+        let playable = this.getSoundDef(name);
+        if (playable) {
+            return this.playSoundDef(playable, optionalMixer);
+        }
+        playable = this.getMusicDef(name);
+        if (!playable) {
+            return undefined;
+        }
+        return this.playMusicDef(playable, optionalMixer);
+    }
+    playSound(name, optionalMixer) {
+        const soundDef = this.getSoundDef(name);
+        if (!soundDef) {
+            return undefined;
+        }
+        return this.playSoundDef(soundDef, optionalMixer);
+    }
+    playMusic(name, optionalMixer) {
+        const musicDef = this.getMusicDef(name);
+        if (!musicDef) {
+            return undefined;
+        }
+        return this.playMusicDef(musicDef, optionalMixer);
+    }
+    playPlayable(playable, optionalMixer) {
         switch (playable.kind) {
             case "sound":
-                return this.playSound(playable, optionalMixer);
+                return this.playSoundDef(playable, optionalMixer);
             case "music":
-                return this.playMusic(playable, optionalMixer);
+                return this.playMusicDef(playable, optionalMixer);
         }
     }
-    playSound(sound, optionalMixer) {
+    playSoundDef(sound, optionalMixer) {
         const buffer = this.assetMap[sound.asset];
         if (!buffer) {
             return undefined;
@@ -414,7 +447,7 @@ class Mixdown {
         source.onended = () => { this.voiceEnded(voiceHandle); };
         return voiceHandle;
     }
-    playMusic(music, optionalMixer) {
+    playMusicDef(music, optionalMixer) {
         if (this.streams.numFreeSlots() === 0) {
             return undefined;
         }

@@ -121,9 +121,14 @@ export declare class Mixdown {
     resume(): void;
     addMixer(mixer: Mixer): boolean;
     getMixer(name: string): Mixer | undefined;
-    play(playable: Playable, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
-    playSound(sound: SoundDefinition, optionalMixer?: string): VoiceGenerationHandle | undefined;
-    playMusic(music: MusicDefinition, optionalMixer?: string): StreamGenerationHandle | undefined;
+    getSoundDef(name: string): SoundDefinition | undefined;
+    getMusicDef(name: string): MusicDefinition | undefined;
+    play(name: string, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
+    playSound(name: string, optionalMixer?: string): VoiceGenerationHandle | undefined;
+    playMusic(name: string, optionalMixer?: string): StreamGenerationHandle | undefined;
+    playPlayable(playable: Playable, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
+    playSoundDef(sound: SoundDefinition, optionalMixer?: string): VoiceGenerationHandle | undefined;
+    playMusicDef(music: MusicDefinition, optionalMixer?: string): StreamGenerationHandle | undefined;
     stopAll(): void;
     stop(index: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
     stopSound(index: VoiceGenerationHandle): OperationResult;

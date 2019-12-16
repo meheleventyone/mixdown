@@ -435,16 +435,54 @@ export class Mixdown {
         return this.mixerMap[name];
     }
 
-    play(playable : Playable, optionalMixer? : string) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
+    getSoundDef(name : string) : SoundDefinition | undefined {
+        return this.bank?.getSoundDefinition(name);
+    }
+
+    getMusicDef(name : string) : MusicDefinition | undefined {
+        return this.bank?.getMusicDefinition(name);
+    }
+
+    play(name : string, optionalMixer? : string) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
+        let playable : Playable | undefined = this.getSoundDef(name);
+        if (playable) {
+            return this.playSoundDef(playable, optionalMixer); 
+        }
+
+        playable = this.getMusicDef(name);
+
+        if (!playable) {
+            return undefined;
+        }
+        return this.playMusicDef(playable, optionalMixer);
+    }
+
+    playSound(name : string, optionalMixer? : string) : VoiceGenerationHandle | undefined {
+        const soundDef = this.getSoundDef(name);
+        if (!soundDef) {
+            return undefined;
+        }
+        return this.playSoundDef(soundDef, optionalMixer);
+    }
+
+    playMusic(name : string, optionalMixer? : string) : StreamGenerationHandle | undefined {
+        const musicDef = this.getMusicDef(name);
+        if (!musicDef) {
+            return undefined;
+        }
+        return this.playMusicDef(musicDef, optionalMixer);
+    }
+
+    playPlayable(playable : Playable, optionalMixer? : string) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
         switch (playable.kind) {
             case "sound":
-                return this.playSound(playable, optionalMixer);
+                return this.playSoundDef(playable, optionalMixer);
             case "music":
-                return this.playMusic(playable, optionalMixer);
+                return this.playMusicDef(playable, optionalMixer);
         }
     }
 
-    playSound(sound : SoundDefinition, optionalMixer? : string) : VoiceGenerationHandle | undefined {
+    playSoundDef(sound : SoundDefinition, optionalMixer? : string) : VoiceGenerationHandle | undefined {
         const buffer = this.assetMap[sound.asset];
         
         if (!buffer) {
@@ -516,7 +554,7 @@ export class Mixdown {
         return voiceHandle;
     }
 
-    playMusic(music : MusicDefinition, optionalMixer? : string) : StreamGenerationHandle | undefined {
+    playMusicDef(music : MusicDefinition, optionalMixer? : string) : StreamGenerationHandle | undefined {
         if (this.streams.numFreeSlots() === 0) {
             return undefined;
         }
