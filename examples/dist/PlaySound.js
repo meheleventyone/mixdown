@@ -8,7 +8,7 @@ function unlock() {
         return;
     }
     mixdown.resume();
-    mixdown.playSound({ kind: "sound", asset: "twang", gain: 1, priority: Priority.High });
+    mixdown.playSoundDef({ kind: "sound", name: "twang", asset: "twang", gain: 1, priority: Priority.High });
 }
 var button = document.getElementById("playsound");
 if (button) {

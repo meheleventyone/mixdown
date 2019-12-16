@@ -134,6 +134,7 @@ function play() {
     mixdown.resume();
     var sound = {
         kind: "sound",
+        name: "twang",
         asset: "twang",
         gain: gain,
         priority: Priority.High
@@ -148,7 +149,7 @@ function play() {
         start: clipStart,
         end: clipEnd
     };
-    soundId = mixdown.playSound(sound);
+    soundId = mixdown.playSoundDef(sound);
 }
 function stop() {
     if (!soundId) {

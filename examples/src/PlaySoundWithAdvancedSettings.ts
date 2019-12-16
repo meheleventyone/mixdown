@@ -1,4 +1,4 @@
-import {Mixdown, Priority, VoiceGenerationHandle, Sound} from "../dist/mixdown.module.js"
+import {Mixdown, Priority, VoiceGenerationHandle, SoundDefinition} from "../dist/mixdown.module.js"
 
 function getEventFloatValue(event : Event) : number {
     return parseFloat((event.currentTarget as HTMLInputElement).value);
@@ -169,8 +169,9 @@ function play() {
     // todo check if need to resume
     mixdown.resume();
 
-    let sound : Sound = {
+    let sound : SoundDefinition = {
         kind: "sound",
+        name: "twang",
         asset: "twang",
         gain: gain,
         priority: Priority.High
@@ -188,7 +189,7 @@ function play() {
         end: clipEnd
     }
 
-    soundId = mixdown.playSound(sound);
+    soundId = mixdown.playSoundDef(sound);
 }
 
 function stop() {
