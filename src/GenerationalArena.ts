@@ -4,9 +4,6 @@ export interface GenerationHandle {
     readonly generation : number;
 }
 
-// todo: maybe let this take a second type constrained to being something that matches
-// GenerationHandle so users can define the return type if they don't want to wrap the 
-// arena
 export class GenerationalArena<T> {
     generation : number[] = [];
     data : (T | undefined)[] = [];
