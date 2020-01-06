@@ -4,9 +4,6 @@
     (global = global || self, factory(global.mixdown = {}));
 }(this, (function (exports) { 'use strict';
 
-    // todo: maybe let this take a second type constrained to being something that matches
-    // GenerationHandle so users can define the return type if they don't want to wrap the 
-    // arena
     class GenerationalArena {
         constructor(size) {
             this.generation = [];
@@ -153,7 +150,7 @@
             const mixer = {
                 kind: "mixer",
                 name: name,
-                parent: (parent !== null && parent !== void 0 ? parent : "master"),
+                parent: parent,
                 gain: gain
             };
             this.add(mixer);
@@ -451,13 +448,14 @@
         }
         playMusicDef(music, optionalMixer) {
             if (this.streams.numFreeSlots() === 0) {
+                console.warn("mixdown had no free stream slots to play music " + music.name);
                 return undefined;
             }
             // if there is no space we cannot play this music
             // log a warning and continue
             const freeSlots = this.numFreeSlots();
             if (freeSlots <= 0) {
-                console.warn("mixdown had no free slots to play music.");
+                console.warn("mixdown had no free slots to play music " + music.name);
                 return undefined;
             }
             // we don't do eviction for music as the assumption is that we're changing tracks and music is highest priority

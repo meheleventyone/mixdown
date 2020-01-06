@@ -149,7 +149,7 @@ export class BankBuilder {
         const mixer : MixerDefinition = {
             kind : "mixer",
             name : name,
-            parent : parent ?? "master",
+            parent : parent,
             gain : gain
         }
         this.add(mixer);
@@ -556,6 +556,7 @@ export class Mixdown {
 
     playMusicDef(music : MusicDefinition, optionalMixer? : string) : StreamGenerationHandle | undefined {
         if (this.streams.numFreeSlots() === 0) {
+            console.warn("mixdown had no free stream slots to play music " + music.name);
             return undefined;
         }
 
@@ -563,7 +564,7 @@ export class Mixdown {
         // log a warning and continue
         const freeSlots = this.numFreeSlots();
         if (freeSlots <= 0) {
-            console.warn("mixdown had no free slots to play music.");
+            console.warn("mixdown had no free slots to play music " + music.name);
             return undefined;
         }
 
