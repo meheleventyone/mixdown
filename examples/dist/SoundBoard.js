@@ -1,4 +1,4 @@
-import { BankBuilder, Priority } from "../dist/mixdown.module.js";
+import { Mixdown, BankBuilder, Priority } from "../dist/mixdown.module.js";
 var builder = new BankBuilder();
 builder.createMixerDefinition("sfx", 1);
 builder.createMixerDefinition("music", 1);
@@ -17,5 +17,20 @@ builder.createMusicDefinition("sadmusic", "../assets/sadmusic.mp3", 1, "music");
 builder.createMusicDefinition("roomambience", "../assets/roomambience.mp3", 1, "ambience");
 builder.createMusicDefinition("spaceshipambience", "../assets/spaceshipambience.mp3", 1, "ambience");
 builder.createSoundDefinition("8bitexplosion", Priority.High, "8bitexplosion", 1, undefined, undefined, "sfx");
-// todo finish this up
-builder.validate();
+builder.createSoundDefinition("footsteps", Priority.High, "footsteps", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("machine-gun", Priority.High, "machine-gun", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("swing", Priority.High, "swing", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("moo", Priority.Medium, "moo", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("oildrum", Priority.Medium, "oildrum", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("grunt", Priority.Medium, "grunt", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("click", Priority.Low, "click", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("error", Priority.Low, "error", 1, undefined, undefined, "sfx");
+// create mixdown
+// max of 15 sounds at once with a max of 4 streams and a slop size for 4 to ease out lower priority sfx
+var mixdown = new Mixdown(15, 4, 4);
+var loadResult = mixdown.loadBank(builder);
+var initialized = false;
+if (loadResult.kind === "value") {
+    var promise = loadResult.value;
+    promise.then(function () { return initialized = true; });
+}
