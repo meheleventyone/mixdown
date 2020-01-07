@@ -290,7 +290,7 @@ class Mixdown {
     loadBank(builder) {
         this.unloadBank();
         if (!builder.validate()) {
-            return LoadBankError.BANK_VALIDATION_FAIL;
+            return { kind: "error", error: LoadBankError.BANK_VALIDATION_FAIL };
         }
         this.bank = builder.bank;
         // first pass instantiate all the mixers
@@ -316,7 +316,7 @@ class Mixdown {
             var promise = this.loadAsset(assetDef.name, assetDef.source);
             assetPromises.push(promise);
         }
-        return Promise.all(assetPromises);
+        return { kind: "value", value: Promise.all(assetPromises) };
     }
     suspend() {
         if (this.context.state === "suspended") {

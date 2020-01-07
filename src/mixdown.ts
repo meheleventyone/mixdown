@@ -214,6 +214,15 @@ export class BankBuilder {
 }
 
 // runtime
+interface Value<T> {
+    kind : "value";
+    value : T;
+}
+
+interface Error<T> {
+    kind : "error";
+    error : T;
+}
 
 export type Playable = SoundDefinition | MusicDefinition;
 
@@ -356,11 +365,11 @@ export class Mixdown {
         this.bank = undefined;
     }
 
-    loadBank (builder : BankBuilder) : Promise<boolean[]> | LoadBankError {
+    loadBank (builder : BankBuilder) : Value<Promise<boolean[]>> | Error<LoadBankError> {
         this.unloadBank();
 
         if (!builder.validate()) {
-            return LoadBankError.BANK_VALIDATION_FAIL;
+            return {kind: "error", error: LoadBankError.BANK_VALIDATION_FAIL};
         }
 
         this.bank = builder.bank;
@@ -393,7 +402,7 @@ export class Mixdown {
             assetPromises.push(promise);
         }
 
-        return Promise.all(assetPromises);
+        return {kind: "value", value: Promise.all(assetPromises)};
     }
 
     suspend() {

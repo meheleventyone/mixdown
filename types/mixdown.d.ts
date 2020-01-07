@@ -63,6 +63,14 @@ export declare class BankBuilder {
     createMixerDefinition(name: string, gain: number, parent?: string): void;
     validate(): boolean;
 }
+interface Value<T> {
+    kind: "value";
+    value: T;
+}
+interface Error<T> {
+    kind: "error";
+    error: T;
+}
 export declare type Playable = SoundDefinition | MusicDefinition;
 export declare enum LoadBankError {
     BANK_VALIDATION_FAIL = 0
@@ -116,7 +124,7 @@ export declare class Mixdown {
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
     loadAsset(name: string, path: string): Promise<boolean>;
     unloadBank(): void;
-    loadBank(builder: BankBuilder): Promise<boolean[]> | LoadBankError;
+    loadBank(builder: BankBuilder): Value<Promise<boolean[]>> | Error<LoadBankError>;
     suspend(): void;
     resume(): void;
     addMixer(mixer: Mixer): boolean;
