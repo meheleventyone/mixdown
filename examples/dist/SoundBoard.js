@@ -62,6 +62,11 @@ function ambience(name) {
     }
     currentAmbience = mixdown.playMusic(name);
 }
+function stopStream(handle) {
+    if (handle) {
+        mixdown.stopMusic(handle);
+    }
+}
 // hook ups for html
 var sfxNames = [
     "8bitexplosion",
@@ -97,3 +102,11 @@ function hookupClicks(nameArray, f) {
 hookupClicks(sfxNames, sfx);
 hookupClicks(musicNames, music);
 hookupClicks(ambienceNames, ambience);
+var stopMusic = document.getElementById("stopmusic");
+if (stopMusic) {
+    stopMusic.addEventListener("click", function () { return stopStream(currentMusic); });
+}
+var stopAmbience = document.getElementById("stopambience");
+if (stopAmbience) {
+    stopAmbience.addEventListener("click", function () { return stopStream(currentAmbience); });
+}

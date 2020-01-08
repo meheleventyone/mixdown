@@ -1,5 +1,8 @@
 import {Mixdown, BankBuilder, Priority, StreamGenerationHandle} from "../dist/mixdown.module.js"
 
+// todo pull this out
+type Optional<T> = T | undefined;
+
 let builder = new BankBuilder();
 
 builder.createMixerDefinition("sfx", 1);
@@ -54,7 +57,7 @@ function sfx (name : string) {
     mixdown.playSound(name);
 }
 
-let currentMusic : StreamGenerationHandle | undefined = undefined;
+let currentMusic : Optional<StreamGenerationHandle> = undefined;
 function music (name : string) {
     if (!initialized) {
         return;
@@ -67,7 +70,7 @@ function music (name : string) {
     currentMusic = mixdown.playMusic(name);
 }
 
-let currentAmbience : StreamGenerationHandle | undefined = undefined;
+let currentAmbience : Optional<StreamGenerationHandle> = undefined;
 function ambience (name : string) {
     if (!initialized) {
         return;
@@ -78,6 +81,12 @@ function ambience (name : string) {
     }
 
     currentAmbience = mixdown.playMusic(name);
+}
+
+function stopStream(handle : Optional<StreamGenerationHandle>) {
+    if (handle) {
+        mixdown.stopMusic(handle);
+    }
 }
 
 // hook ups for html
@@ -115,3 +124,13 @@ function hookupClicks(nameArray : string[], f : (arg0 : string) => void) {
 hookupClicks(sfxNames, sfx);
 hookupClicks(musicNames, music);
 hookupClicks(ambienceNames, ambience);
+
+const stopMusic = document.getElementById("stopmusic");
+if (stopMusic) {
+    stopMusic.addEventListener("click", () => stopStream(currentMusic));
+}
+
+const stopAmbience = document.getElementById("stopambience");
+if (stopAmbience) {
+    stopAmbience.addEventListener("click", () => stopStream(currentAmbience));
+}
