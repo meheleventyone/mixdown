@@ -224,6 +224,10 @@ interface Error<T> {
     error : T;
 }
 
+export type Result<T, E> = Value<T> | Error<E>;
+
+export type Optional<T> = T | undefined;
+
 export type Playable = SoundDefinition | MusicDefinition;
 
 export enum LoadBankError {
@@ -365,7 +369,7 @@ export class Mixdown {
         this.bank = undefined;
     }
 
-    loadBank (builder : BankBuilder) : Value<Promise<boolean[]>> | Error<LoadBankError> {
+    loadBank (builder : BankBuilder) : Result<Promise<boolean[]>, LoadBankError> {
         this.unloadBank();
 
         if (!builder.validate()) {
@@ -440,19 +444,19 @@ export class Mixdown {
         return true;
     }
 
-    getMixer(name : string) : Mixer | undefined {
+    getMixer(name : string) : Optional<Mixer> {
         return this.mixerMap[name];
     }
 
-    getSoundDef(name : string) : SoundDefinition | undefined {
+    getSoundDef(name : string) : Optional<SoundDefinition> {
         return this.bank?.getSoundDefinition(name);
     }
 
-    getMusicDef(name : string) : MusicDefinition | undefined {
+    getMusicDef(name : string) : Optional<MusicDefinition> {
         return this.bank?.getMusicDefinition(name);
     }
 
-    play(name : string, optionalMixer? : string) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
+    play(name : string, optionalMixer? : string) : Optional<VoiceGenerationHandle | StreamGenerationHandle> {
         let playable : Playable | undefined = this.getSoundDef(name);
         if (playable) {
             return this.playSoundDef(playable, optionalMixer); 
@@ -466,7 +470,7 @@ export class Mixdown {
         return this.playMusicDef(playable, optionalMixer);
     }
 
-    playSound(name : string, optionalMixer? : string) : VoiceGenerationHandle | undefined {
+    playSound(name : string, optionalMixer? : string) : Optional<VoiceGenerationHandle> {
         const soundDef = this.getSoundDef(name);
         if (!soundDef) {
             return undefined;
@@ -474,7 +478,7 @@ export class Mixdown {
         return this.playSoundDef(soundDef, optionalMixer);
     }
 
-    playMusic(name : string, optionalMixer? : string) : StreamGenerationHandle | undefined {
+    playMusic(name : string, optionalMixer? : string) : Optional<StreamGenerationHandle> {
         const musicDef = this.getMusicDef(name);
         if (!musicDef) {
             return undefined;
@@ -482,7 +486,7 @@ export class Mixdown {
         return this.playMusicDef(musicDef, optionalMixer);
     }
 
-    playPlayable(playable : Playable, optionalMixer? : string) : VoiceGenerationHandle | StreamGenerationHandle | undefined {
+    playPlayable(playable : Playable, optionalMixer? : string) : Optional<VoiceGenerationHandle | StreamGenerationHandle> {
         switch (playable.kind) {
             case "sound":
                 return this.playSoundDef(playable, optionalMixer);
@@ -491,7 +495,7 @@ export class Mixdown {
         }
     }
 
-    playSoundDef(sound : SoundDefinition, optionalMixer? : string) : VoiceGenerationHandle | undefined {
+    playSoundDef(sound : SoundDefinition, optionalMixer? : string) : Optional<VoiceGenerationHandle> {
         const buffer = this.assetMap[sound.asset];
         
         if (!buffer) {
@@ -563,7 +567,7 @@ export class Mixdown {
         return voiceHandle;
     }
 
-    playMusicDef(music : MusicDefinition, optionalMixer? : string) : StreamGenerationHandle | undefined {
+    playMusicDef(music : MusicDefinition, optionalMixer? : string) : Optional<StreamGenerationHandle> {
         if (this.streams.numFreeSlots() === 0) {
             console.warn("mixdown had no free stream slots to play music " + music.name);
             return undefined;
@@ -767,7 +771,7 @@ export class Mixdown {
         return element !== undefined;
     }
 
-    private getElement(index : VoiceGenerationHandle | StreamGenerationHandle) : Voice | Stream | undefined {
+    private getElement(index : VoiceGenerationHandle | StreamGenerationHandle) : Optional<Voice | Stream> {
         let element : Voice | Stream | undefined = undefined;
         if (index.kind === "voice") {
             element = this.voices.get(index);
