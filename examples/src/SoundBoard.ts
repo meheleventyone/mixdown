@@ -1,4 +1,4 @@
-import {Mixdown, BankBuilder, Priority} from "../dist/mixdown.module.js"
+import {Mixdown, BankBuilder, Priority, StreamGenerationHandle} from "../dist/mixdown.module.js"
 
 let builder = new BankBuilder();
 
@@ -11,20 +11,20 @@ builder.createAssetDefinition("click", "../assets/click.mp3");
 builder.createAssetDefinition("error", "../assets/error.mp3");
 builder.createAssetDefinition("footsteps", "../assets/footsteps.mp3");
 builder.createAssetDefinition("grunt", "../assets/grunt.mp3");
-builder.createAssetDefinition("machine-gun", "../assets/machine-gun.mp3");
+builder.createAssetDefinition("machinegun", "../assets/machine-gun.mp3");
 builder.createAssetDefinition("moo", "../assets/moo.mp3");
 builder.createAssetDefinition("oildrum", "../assets/oildrum.mp3");
 builder.createAssetDefinition("swing", "../assets/swing.mp3");
 
-builder.createMusicDefinition("fightmusic", "../assets/fightmusic.mp3", 1, "music");
-builder.createMusicDefinition("sadmusic", "../assets/sadmusic.mp3", 1, "music");
+builder.createMusicDefinition("fight", "../assets/fightmusic.mp3", 1, "music");
+builder.createMusicDefinition("sad", "../assets/sadmusic.mp3", 1, "music");
 
-builder.createMusicDefinition("roomambience", "../assets/roomambience.mp3", 1, "ambience");
-builder.createMusicDefinition("spaceshipambience", "../assets/spaceshipambience.mp3", 1, "ambience");
+builder.createMusicDefinition("room", "../assets/roomambience.mp3", 1, "ambience");
+builder.createMusicDefinition("spaceship", "../assets/spaceshipambience.mp3", 1, "ambience");
 
 builder.createSoundDefinition("8bitexplosion", Priority.High, "8bitexplosion", 1, undefined, undefined, "sfx");
 builder.createSoundDefinition("footsteps", Priority.High, "footsteps", 1, undefined, undefined, "sfx");
-builder.createSoundDefinition("machine-gun", Priority.High, "machine-gun", 1, undefined, undefined, "sfx");
+builder.createSoundDefinition("machinegun", Priority.High, "machinegun", 1, undefined, undefined, "sfx");
 builder.createSoundDefinition("swing", Priority.High, "swing", 1, undefined, undefined, "sfx");
 
 builder.createSoundDefinition("moo", Priority.Medium, "moo", 1, undefined, undefined, "sfx");
@@ -46,3 +46,72 @@ if (loadResult.kind === "value") {
     promise.then(() => initialized = true);
 }
 
+function sfx (name : string) {
+    if (!initialized) {
+        return;
+    }
+
+    mixdown.playSound(name);
+}
+
+let currentMusic : StreamGenerationHandle | undefined = undefined;
+function music (name : string) {
+    if (!initialized) {
+        return;
+    }
+    if (currentMusic) {
+        // todo: fade out and stop as an option
+        mixdown.stopMusic(currentMusic);
+    }
+
+    currentMusic = mixdown.playMusic(name);
+}
+
+let currentAmbience : StreamGenerationHandle | undefined = undefined;
+function ambience (name : string) {
+    if (!initialized) {
+        return;
+    }
+    if (currentAmbience) {
+        // todo: fade out and stop as an option
+        mixdown.stopMusic(currentAmbience);
+    }
+
+    currentAmbience = mixdown.playMusic(name);
+}
+
+// hook ups for html
+const sfxNames = [
+    "8bitexplosion",
+    "footsteps",
+    "machinegun",
+    "swing",
+    "moo",
+    "oildrum",
+    "grunt",
+    "click",
+    "error"
+];
+
+const musicNames = [
+    "fight",
+    "sad"
+]
+
+const ambienceNames = [
+    "room",
+    "spaceship"
+]
+
+function hookupClicks(nameArray : string[], f : (arg0 : string) => void) {
+    for (let name of nameArray) {
+        const button = document.getElementById(name);
+        if (button) {
+            button.addEventListener("click", () => f(name));
+        }
+    }   
+}
+
+hookupClicks(sfxNames, sfx);
+hookupClicks(musicNames, music);
+hookupClicks(ambienceNames, ambience);
