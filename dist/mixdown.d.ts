@@ -88,6 +88,8 @@ interface Error<T> {
     kind: "error";
     error: T;
 }
+declare type Result<T, E> = Value<T> | Error<E>;
+declare type Optional<T> = T | undefined;
 declare type Playable = SoundDefinition | MusicDefinition;
 declare enum LoadBankError {
     BANK_VALIDATION_FAIL = 0
@@ -141,19 +143,19 @@ declare class Mixdown {
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
     loadAsset(name: string, path: string): Promise<boolean>;
     unloadBank(): void;
-    loadBank(builder: BankBuilder): Value<Promise<boolean[]>> | Error<LoadBankError>;
+    loadBank(builder: BankBuilder): Result<Promise<boolean[]>, LoadBankError>;
     suspend(): void;
     resume(): void;
     addMixer(mixer: Mixer): boolean;
-    getMixer(name: string): Mixer | undefined;
-    getSoundDef(name: string): SoundDefinition | undefined;
-    getMusicDef(name: string): MusicDefinition | undefined;
-    play(name: string, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
-    playSound(name: string, optionalMixer?: string): VoiceGenerationHandle | undefined;
-    playMusic(name: string, optionalMixer?: string): StreamGenerationHandle | undefined;
-    playPlayable(playable: Playable, optionalMixer?: string): VoiceGenerationHandle | StreamGenerationHandle | undefined;
-    playSoundDef(sound: SoundDefinition, optionalMixer?: string): VoiceGenerationHandle | undefined;
-    playMusicDef(music: MusicDefinition, optionalMixer?: string): StreamGenerationHandle | undefined;
+    getMixer(name: string): Optional<Mixer>;
+    getSoundDef(name: string): Optional<SoundDefinition>;
+    getMusicDef(name: string): Optional<MusicDefinition>;
+    play(name: string, optionalMixer?: string): Optional<VoiceGenerationHandle | StreamGenerationHandle>;
+    playSound(name: string, optionalMixer?: string): Optional<VoiceGenerationHandle>;
+    playMusic(name: string, optionalMixer?: string): Optional<StreamGenerationHandle>;
+    playPlayable(playable: Playable, optionalMixer?: string): Optional<VoiceGenerationHandle | StreamGenerationHandle>;
+    playSoundDef(sound: SoundDefinition, optionalMixer?: string): Optional<VoiceGenerationHandle>;
+    playMusicDef(music: MusicDefinition, optionalMixer?: string): Optional<StreamGenerationHandle>;
     stopAll(): void;
     stop(index: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
     stopSound(index: VoiceGenerationHandle): OperationResult;
@@ -172,4 +174,4 @@ declare class Mixdown {
     private evictVoice;
 }
 
-export { AssetDefinition, Bank, BankBuilder, LoadBankError, Mixdown, Mixer, MixerDefinition, MusicDefinition, OperationResult, Playable, Priority, SoundClip, SoundDefinition, SoundLoop, StreamGenerationHandle, VoiceGenerationHandle };
+export { AssetDefinition, Bank, BankBuilder, LoadBankError, Mixdown, Mixer, MixerDefinition, MusicDefinition, OperationResult, Optional, Playable, Priority, Result, SoundClip, SoundDefinition, SoundLoop, StreamGenerationHandle, VoiceGenerationHandle };
