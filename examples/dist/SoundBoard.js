@@ -110,3 +110,44 @@ var stopAmbience = document.getElementById("stopambience");
 if (stopAmbience) {
     stopAmbience.addEventListener("click", function () { return stopStream(currentAmbience); });
 }
+function getEventFloatValue(event) {
+    return parseFloat(event.currentTarget.value);
+}
+function masterChanged(event) {
+    var gain = getEventFloatValue(event);
+    mixdown.masterMixer.gain(gain);
+}
+function sfxChanged(event) {
+    var _a;
+    var gain = getEventFloatValue(event);
+    var mixer = mixdown.getMixer("sfx");
+    (_a = mixer) === null || _a === void 0 ? void 0 : _a.gain(gain);
+}
+function musicChanged(event) {
+    var _a;
+    var gain = getEventFloatValue(event);
+    var mixer = mixdown.getMixer("music");
+    (_a = mixer) === null || _a === void 0 ? void 0 : _a.gain(gain);
+}
+function ambienceChanged(event) {
+    var _a;
+    var gain = getEventFloatValue(event);
+    var mixer = mixdown.getMixer("ambience");
+    (_a = mixer) === null || _a === void 0 ? void 0 : _a.gain(gain);
+}
+var masterSlider = document.getElementById("master");
+if (masterSlider) {
+    masterSlider.addEventListener("input", masterChanged);
+}
+var sfxSlider = document.getElementById("sfx");
+if (sfxSlider) {
+    sfxSlider.addEventListener("input", sfxChanged);
+}
+var musicSlider = document.getElementById("music");
+if (musicSlider) {
+    musicSlider.addEventListener("input", musicChanged);
+}
+var ambienceSlider = document.getElementById("master");
+if (ambienceSlider) {
+    ambienceSlider.addEventListener("input", ambienceChanged);
+}

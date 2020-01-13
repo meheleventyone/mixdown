@@ -134,3 +134,50 @@ const stopAmbience = document.getElementById("stopambience");
 if (stopAmbience) {
     stopAmbience.addEventListener("click", () => stopStream(currentAmbience));
 }
+
+function getEventFloatValue(event : Event) : number {
+    return parseFloat((event.currentTarget as HTMLInputElement).value);
+}
+
+function masterChanged(event : Event) {
+    const gain = getEventFloatValue(event);
+    mixdown.masterMixer.gain(gain);
+}
+
+function sfxChanged(event : Event) {
+    const gain = getEventFloatValue(event);
+    const mixer = mixdown.getMixer("sfx");
+    mixer?.gain(gain);
+}
+
+function musicChanged(event : Event) {
+    const gain = getEventFloatValue(event);
+    const mixer = mixdown.getMixer("music");
+    mixer?.gain(gain);
+}
+
+function ambienceChanged(event : Event) {
+    const gain = getEventFloatValue(event);
+    const mixer = mixdown.getMixer("ambience");
+    mixer?.gain(gain);
+}
+
+const masterSlider = document.getElementById("master");
+if (masterSlider) {
+    masterSlider.addEventListener("input", masterChanged);
+}
+
+const sfxSlider = document.getElementById("sfx");
+if (sfxSlider) {
+    sfxSlider.addEventListener("input", sfxChanged);
+}
+
+const musicSlider = document.getElementById("music");
+if (musicSlider) {
+    musicSlider.addEventListener("input", musicChanged);
+}
+
+const ambienceSlider = document.getElementById("master");
+if (ambienceSlider) {
+    ambienceSlider.addEventListener("input", ambienceChanged);
+}
