@@ -12,10 +12,10 @@ builder.createAssetDefinition("machinegun", "../assets/machine-gun.mp3");
 builder.createAssetDefinition("moo", "../assets/moo.mp3");
 builder.createAssetDefinition("oildrum", "../assets/oildrum.mp3");
 builder.createAssetDefinition("swing", "../assets/swing.mp3");
-builder.createMusicDefinition("fight", "../assets/fightmusic.mp3", 1, "music");
-builder.createMusicDefinition("sad", "../assets/sadmusic.mp3", 1, "music");
-builder.createMusicDefinition("room", "../assets/roomambience.mp3", 1, "ambience");
-builder.createMusicDefinition("spaceship", "../assets/spaceshipambience.mp3", 1, "ambience");
+builder.createStreamDefinition("fight", "../assets/fightmusic.mp3", 1, "music");
+builder.createStreamDefinition("sad", "../assets/sadmusic.mp3", 1, "music");
+builder.createStreamDefinition("room", "../assets/roomambience.mp3", 1, "ambience");
+builder.createStreamDefinition("spaceship", "../assets/spaceshipambience.mp3", 1, "ambience");
 builder.createSoundDefinition("8bitexplosion", Priority.High, "8bitexplosion", 1, undefined, undefined, "sfx");
 builder.createSoundDefinition("footsteps", Priority.High, "footsteps", 1, undefined, undefined, "sfx");
 builder.createSoundDefinition("machinegun", Priority.High, "machinegun", 1, undefined, undefined, "sfx");
@@ -47,9 +47,9 @@ function music(name) {
     }
     if (currentMusic) {
         // todo: fade out and stop as an option
-        mixdown.stopMusic(currentMusic);
+        mixdown.stopStream(currentMusic);
     }
-    currentMusic = mixdown.playMusic(name);
+    currentMusic = mixdown.playStream(name);
 }
 var currentAmbience = undefined;
 function ambience(name) {
@@ -58,13 +58,13 @@ function ambience(name) {
     }
     if (currentAmbience) {
         // todo: fade out and stop as an option
-        mixdown.stopMusic(currentAmbience);
+        mixdown.stopStream(currentAmbience);
     }
-    currentAmbience = mixdown.playMusic(name);
+    currentAmbience = mixdown.playStream(name);
 }
 function stopStream(handle) {
     if (handle) {
-        mixdown.stopMusic(handle);
+        mixdown.stopStream(handle);
     }
 }
 // hook ups for html

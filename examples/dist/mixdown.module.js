@@ -57,7 +57,6 @@ class GenerationalArena {
 }
 
 // A Web Audio based mixer for games.
-// definitions
 var Priority;
 (function (Priority) {
     Priority[Priority["Low"] = 0] = "Low";
@@ -69,12 +68,12 @@ class Bank {
     constructor() {
         this.assets = [];
         this.sounds = [];
-        this.music = [];
+        this.streams = [];
         this.mixers = [];
     }
     get(name) {
         var _a, _b, _c, _d;
-        return _d = (_c = (_b = (_a = this.getAssetDefinition(name), (_a !== null && _a !== void 0 ? _a : this.getSoundDefinition(name))), (_b !== null && _b !== void 0 ? _b : this.getMusicDefinition(name))), (_c !== null && _c !== void 0 ? _c : this.getMixerDefinition(name))), (_d !== null && _d !== void 0 ? _d : undefined);
+        return _d = (_c = (_b = (_a = this.getAssetDefinition(name), (_a !== null && _a !== void 0 ? _a : this.getSoundDefinition(name))), (_b !== null && _b !== void 0 ? _b : this.getStreamDefinition(name))), (_c !== null && _c !== void 0 ? _c : this.getMixerDefinition(name))), (_d !== null && _d !== void 0 ? _d : undefined);
     }
     getAssetDefinition(name) {
         return this.assets.find((item) => item.name === name);
@@ -82,8 +81,8 @@ class Bank {
     getSoundDefinition(name) {
         return this.sounds.find((item) => item.name === name);
     }
-    getMusicDefinition(name) {
-        return this.music.find((item) => item.name === name);
+    getStreamDefinition(name) {
+        return this.streams.find((item) => item.name === name);
     }
     getMixerDefinition(name) {
         return this.mixers.find((item) => item.name === name);
@@ -99,8 +98,8 @@ class BankBuilder {
                 return this.bank.assets;
             case "mixer":
                 return this.bank.mixers;
-            case "music":
-                return this.bank.music;
+            case "stream":
+                return this.bank.streams;
             case "sound":
                 return this.bank.sounds;
         }
@@ -132,15 +131,15 @@ class BankBuilder {
         };
         this.add(sound);
     }
-    createMusicDefinition(name, source, gain, mixer) {
-        const music = {
-            kind: "music",
+    createStreamDefinition(name, source, gain, mixer) {
+        const stream = {
+            kind: "stream",
             name: name,
             source: source,
             gain: gain,
             mixer: mixer
         };
-        this.add(music);
+        this.add(stream);
     }
     createMixerDefinition(name, gain, parent) {
         const mixer = {
@@ -172,14 +171,14 @@ class BankBuilder {
             }
         }
         // check mixers are valid
-        for (let i = 0; i < this.bank.music.length; ++i) {
-            const musicDef = this.bank.music[i];
-            if (!musicDef.mixer) {
+        for (let i = 0; i < this.bank.streams.length; ++i) {
+            const streamDef = this.bank.streams[i];
+            if (!streamDef.mixer) {
                 break;
             }
-            const mixerDef = this.bank.getMixerDefinition(musicDef.mixer);
+            const mixerDef = this.bank.getMixerDefinition(streamDef.mixer);
             if (!mixerDef) {
-                console.warn("Bank Validation Issue: Music %s references missing Mixer %s", musicDef.name, musicDef.mixer);
+                console.warn("Bank Validation Issue: Stream %s references missing Mixer %s", streamDef.name, streamDef.mixer);
                 valid = false;
             }
         }
@@ -351,20 +350,20 @@ class Mixdown {
         var _a;
         return (_a = this.bank) === null || _a === void 0 ? void 0 : _a.getSoundDefinition(name);
     }
-    getMusicDef(name) {
+    getStreamDef(name) {
         var _a;
-        return (_a = this.bank) === null || _a === void 0 ? void 0 : _a.getMusicDefinition(name);
+        return (_a = this.bank) === null || _a === void 0 ? void 0 : _a.getStreamDefinition(name);
     }
     play(name, optionalMixer) {
         let playable = this.getSoundDef(name);
         if (playable) {
             return this.playSoundDef(playable, optionalMixer);
         }
-        playable = this.getMusicDef(name);
+        playable = this.getStreamDef(name);
         if (!playable) {
             return undefined;
         }
-        return this.playMusicDef(playable, optionalMixer);
+        return this.playStreamDef(playable, optionalMixer);
     }
     playSound(name, optionalMixer) {
         const soundDef = this.getSoundDef(name);
@@ -373,19 +372,19 @@ class Mixdown {
         }
         return this.playSoundDef(soundDef, optionalMixer);
     }
-    playMusic(name, optionalMixer) {
-        const musicDef = this.getMusicDef(name);
-        if (!musicDef) {
+    playStream(name, optionalMixer) {
+        const streamDef = this.getStreamDef(name);
+        if (!streamDef) {
             return undefined;
         }
-        return this.playMusicDef(musicDef, optionalMixer);
+        return this.playStreamDef(streamDef, optionalMixer);
     }
     playPlayable(playable, optionalMixer) {
         switch (playable.kind) {
             case "sound":
                 return this.playSoundDef(playable, optionalMixer);
-            case "music":
-                return this.playMusicDef(playable, optionalMixer);
+            case "stream":
+                return this.playStreamDef(playable, optionalMixer);
         }
     }
     playSoundDef(sound, optionalMixer) {
@@ -444,21 +443,21 @@ class Mixdown {
         source.onended = () => { this.voiceEnded(voiceHandle); };
         return voiceHandle;
     }
-    playMusicDef(music, optionalMixer) {
+    playStreamDef(stream, optionalMixer) {
         if (this.streams.numFreeSlots() === 0) {
-            console.warn("mixdown had no free stream slots to play music " + music.name);
+            console.warn("mixdown had no free stream slots to play a stream " + stream.name);
             return undefined;
         }
-        // if there is no space we cannot play this music
+        // if there is no space we cannot play this stream
         // log a warning and continue
         const freeSlots = this.numFreeSlots();
         if (freeSlots <= 0) {
-            console.warn("mixdown had no free slots to play music " + music.name);
+            console.warn("mixdown had no free slots to play a stream " + stream.name);
             return undefined;
         }
-        // we don't do eviction for music as the assumption is that we're changing tracks and music is highest priority
+        // we don't do eviction for streams as the assumption is that we're changing tracks and streams are highest priority
         // and long lasting so we can afford to take up some slop and let sounds adjust accordingly
-        const audio = new Audio(music.source);
+        const audio = new Audio(stream.source);
         audio.autoplay = true;
         audio.loop = true;
         const ctx = this.context;
@@ -467,8 +466,8 @@ class Mixdown {
         source.connect(balance);
         let gain = ctx.createGain();
         balance.connect(gain);
-        gain.gain.setValueAtTime(music.gain, ctx.currentTime);
-        var mixerName = (optionalMixer !== null && optionalMixer !== void 0 ? optionalMixer : music.mixer);
+        gain.gain.setValueAtTime(stream.gain, ctx.currentTime);
+        var mixerName = (optionalMixer !== null && optionalMixer !== void 0 ? optionalMixer : stream.mixer);
         var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
         if (mixer) {
             gain.connect(mixer.gainNode);
@@ -508,7 +507,7 @@ class Mixdown {
             return this.stopSound(index);
         }
         else {
-            return this.stopMusic(index);
+            return this.stopStream(index);
         }
     }
     stopSound(index) {
@@ -524,7 +523,7 @@ class Mixdown {
         }
         return OperationResult.SUCCESS;
     }
-    stopMusic(index) {
+    stopStream(index) {
         const stream = this.streams.get(index);
         if (!stream) {
             return OperationResult.DOES_NOT_EXIST;
@@ -626,7 +625,7 @@ class Mixdown {
     }
     evictVoice(priority) {
         // we are going to nicely evict one of the currently playing sounds at
-        // a lower priority, music is counted as never to be removed
+        // a lower priority, a stream is counted as never to be removed
         // right now we're just going to evict the first thing we come across
         // in the future we might want this to be more heuristic based 
         // (e.g. evict the quietest sound with the lowest priority)
