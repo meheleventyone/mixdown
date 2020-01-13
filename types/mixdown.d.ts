@@ -24,8 +24,8 @@ export interface SoundDefinition extends Definition {
     clip?: SoundClip;
     mixer?: string;
 }
-export interface MusicDefinition extends Definition {
-    kind: "music";
+export interface StreamDefinition extends Definition {
+    kind: "stream";
     source: string;
     gain: number;
     mixer?: string;
@@ -40,16 +40,16 @@ export interface AssetDefinition extends Definition {
     kind: "asset";
     source: string;
 }
-declare type Definable = AssetDefinition | SoundDefinition | MusicDefinition | MixerDefinition;
+declare type Definable = AssetDefinition | SoundDefinition | StreamDefinition | MixerDefinition;
 export declare class Bank {
     assets: AssetDefinition[];
     sounds: SoundDefinition[];
-    music: MusicDefinition[];
+    streams: StreamDefinition[];
     mixers: MixerDefinition[];
     get(name: string): Definable | undefined;
     getAssetDefinition(name: string): AssetDefinition | undefined;
     getSoundDefinition(name: string): SoundDefinition | undefined;
-    getMusicDefinition(name: string): MusicDefinition | undefined;
+    getStreamDefinition(name: string): StreamDefinition | undefined;
     getMixerDefinition(name: string): MixerDefinition | undefined;
 }
 export declare class BankBuilder {
@@ -59,7 +59,7 @@ export declare class BankBuilder {
     add(definition: Definable): void;
     createAssetDefinition(name: string, source: string): void;
     createSoundDefinition(name: string, priority: Priority, asset: string, gain: number, loop?: SoundLoop, clip?: SoundClip, mixer?: string): void;
-    createMusicDefinition(name: string, source: string, gain: number, mixer?: string): void;
+    createStreamDefinition(name: string, source: string, gain: number, mixer?: string): void;
     createMixerDefinition(name: string, gain: number, parent?: string): void;
     validate(): boolean;
 }
@@ -73,7 +73,7 @@ interface Error<T> {
 }
 export declare type Result<T, E> = Value<T> | Error<E>;
 export declare type Optional<T> = T | undefined;
-export declare type Playable = SoundDefinition | MusicDefinition;
+export declare type Playable = SoundDefinition | StreamDefinition;
 export declare enum LoadBankError {
     BANK_VALIDATION_FAIL = 0
 }
@@ -132,17 +132,17 @@ export declare class Mixdown {
     addMixer(mixer: Mixer): boolean;
     getMixer(name: string): Optional<Mixer>;
     getSoundDef(name: string): Optional<SoundDefinition>;
-    getMusicDef(name: string): Optional<MusicDefinition>;
+    getStreamDef(name: string): Optional<StreamDefinition>;
     play(name: string, optionalMixer?: string): Optional<VoiceGenerationHandle | StreamGenerationHandle>;
     playSound(name: string, optionalMixer?: string): Optional<VoiceGenerationHandle>;
-    playMusic(name: string, optionalMixer?: string): Optional<StreamGenerationHandle>;
+    playStream(name: string, optionalMixer?: string): Optional<StreamGenerationHandle>;
     playPlayable(playable: Playable, optionalMixer?: string): Optional<VoiceGenerationHandle | StreamGenerationHandle>;
     playSoundDef(sound: SoundDefinition, optionalMixer?: string): Optional<VoiceGenerationHandle>;
-    playMusicDef(music: MusicDefinition, optionalMixer?: string): Optional<StreamGenerationHandle>;
+    playStreamDef(stream: StreamDefinition, optionalMixer?: string): Optional<StreamGenerationHandle>;
     stopAll(): void;
     stop(index: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
     stopSound(index: VoiceGenerationHandle): OperationResult;
-    stopMusic(index: StreamGenerationHandle): OperationResult;
+    stopStream(index: StreamGenerationHandle): OperationResult;
     loop(index: VoiceGenerationHandle, start?: number, end?: number): OperationResult;
     stopLoop(index: VoiceGenerationHandle): OperationResult;
     fadeTo(index: VoiceGenerationHandle | StreamGenerationHandle, value: number, duration: number): OperationResult;

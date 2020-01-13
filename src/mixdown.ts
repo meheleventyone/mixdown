@@ -33,8 +33,8 @@ export interface SoundDefinition extends Definition {
     mixer? : string;
 }
 
-export interface MusicDefinition extends Definition {
-    kind : "music";
+export interface StreamDefinition extends Definition {
+    kind : "stream";
     source : string;
     gain : number;
     mixer? : string;
@@ -52,19 +52,19 @@ export interface AssetDefinition extends Definition {
     source : string;
 }
 
-type Definable = AssetDefinition | SoundDefinition | MusicDefinition | MixerDefinition;
+type Definable = AssetDefinition | SoundDefinition | StreamDefinition | MixerDefinition;
 
 // todo: can this be purely internal, I think so but lets see
 export class Bank {
     assets : AssetDefinition[] = [];
     sounds : SoundDefinition[] = [];
-    music  : MusicDefinition[] = [];
+    streams  : StreamDefinition[] = [];
     mixers : MixerDefinition[] = [];
 
     get(name : string) : Definable | undefined {
         return this.getAssetDefinition(name) ?? 
                this.getSoundDefinition(name) ?? 
-               this.getMusicDefinition(name) ?? 
+               this.getStreamDefinition(name) ?? 
                this.getMixerDefinition(name) ?? undefined;
     }
 
@@ -76,8 +76,8 @@ export class Bank {
         return this.sounds.find((item) => item.name === name);
     }
 
-    getMusicDefinition (name : string) : MusicDefinition | undefined {
-        return this.music.find((item) => item.name === name);
+    getStreamDefinition (name : string) : StreamDefinition | undefined {
+        return this.streams.find((item) => item.name === name);
     }
 
     getMixerDefinition (name : string) : MixerDefinition | undefined {
@@ -98,8 +98,8 @@ export class BankBuilder {
                 return this.bank.assets;
             case "mixer":
                 return this.bank.mixers;
-            case "music":
-                return this.bank.music;
+            case "stream":
+                return this.bank.streams;
             case "sound":
                 return this.bank.sounds;
         }
@@ -134,15 +134,15 @@ export class BankBuilder {
         this.add(sound);
     }
 
-    createMusicDefinition (name : string, source : string, gain : number, mixer? : string) {
-        const music : MusicDefinition = {
-            kind : "music",
+    createStreamDefinition (name : string, source : string, gain : number, mixer? : string) {
+        const stream : StreamDefinition = {
+            kind : "stream",
             name : name,
             source : source,
             gain : gain,
             mixer : mixer
         };
-        this.add(music);
+        this.add(stream);
     }
 
     createMixerDefinition (name : string, gain : number, parent? : string) {
@@ -180,16 +180,16 @@ export class BankBuilder {
         }
 
         // check mixers are valid
-        for (let i = 0; i < this.bank.music.length; ++i) {
-            const musicDef = this.bank.music[i];
+        for (let i = 0; i < this.bank.streams.length; ++i) {
+            const streamDef = this.bank.streams[i];
 
-            if (!musicDef.mixer) {
+            if (!streamDef.mixer) {
                 break;
             }
 
-            const mixerDef = this.bank.getMixerDefinition(musicDef.mixer);
+            const mixerDef = this.bank.getMixerDefinition(streamDef.mixer);
             if (!mixerDef) {
-                console.warn("Bank Validation Issue: Music %s references missing Mixer %s", musicDef.name, musicDef.mixer);
+                console.warn("Bank Validation Issue: Stream %s references missing Mixer %s", streamDef.name, streamDef.mixer);
                 valid = false;                
             }
         }
@@ -228,7 +228,7 @@ export type Result<T, E> = Value<T> | Error<E>;
 
 export type Optional<T> = T | undefined;
 
-export type Playable = SoundDefinition | MusicDefinition;
+export type Playable = SoundDefinition | StreamDefinition;
 
 export enum LoadBankError {
     BANK_VALIDATION_FAIL,
@@ -452,8 +452,8 @@ export class Mixdown {
         return this.bank?.getSoundDefinition(name);
     }
 
-    getMusicDef(name : string) : Optional<MusicDefinition> {
-        return this.bank?.getMusicDefinition(name);
+    getStreamDef(name : string) : Optional<StreamDefinition> {
+        return this.bank?.getStreamDefinition(name);
     }
 
     play(name : string, optionalMixer? : string) : Optional<VoiceGenerationHandle | StreamGenerationHandle> {
@@ -462,12 +462,12 @@ export class Mixdown {
             return this.playSoundDef(playable, optionalMixer); 
         }
 
-        playable = this.getMusicDef(name);
+        playable = this.getStreamDef(name);
 
         if (!playable) {
             return undefined;
         }
-        return this.playMusicDef(playable, optionalMixer);
+        return this.playStreamDef(playable, optionalMixer);
     }
 
     playSound(name : string, optionalMixer? : string) : Optional<VoiceGenerationHandle> {
@@ -478,20 +478,20 @@ export class Mixdown {
         return this.playSoundDef(soundDef, optionalMixer);
     }
 
-    playMusic(name : string, optionalMixer? : string) : Optional<StreamGenerationHandle> {
-        const musicDef = this.getMusicDef(name);
-        if (!musicDef) {
+    playStream(name : string, optionalMixer? : string) : Optional<StreamGenerationHandle> {
+        const streamDef = this.getStreamDef(name);
+        if (!streamDef) {
             return undefined;
         }
-        return this.playMusicDef(musicDef, optionalMixer);
+        return this.playStreamDef(streamDef, optionalMixer);
     }
 
     playPlayable(playable : Playable, optionalMixer? : string) : Optional<VoiceGenerationHandle | StreamGenerationHandle> {
         switch (playable.kind) {
             case "sound":
                 return this.playSoundDef(playable, optionalMixer);
-            case "music":
-                return this.playMusicDef(playable, optionalMixer);
+            case "stream":
+                return this.playStreamDef(playable, optionalMixer);
         }
     }
 
@@ -567,24 +567,24 @@ export class Mixdown {
         return voiceHandle;
     }
 
-    playMusicDef(music : MusicDefinition, optionalMixer? : string) : Optional<StreamGenerationHandle> {
+    playStreamDef(stream : StreamDefinition, optionalMixer? : string) : Optional<StreamGenerationHandle> {
         if (this.streams.numFreeSlots() === 0) {
-            console.warn("mixdown had no free stream slots to play music " + music.name);
+            console.warn("mixdown had no free stream slots to play a stream " + stream.name);
             return undefined;
         }
 
-        // if there is no space we cannot play this music
+        // if there is no space we cannot play this stream
         // log a warning and continue
         const freeSlots = this.numFreeSlots();
         if (freeSlots <= 0) {
-            console.warn("mixdown had no free slots to play music " + music.name);
+            console.warn("mixdown had no free slots to play a stream " + stream.name);
             return undefined;
         }
 
-        // we don't do eviction for music as the assumption is that we're changing tracks and music is highest priority
+        // we don't do eviction for streams as the assumption is that we're changing tracks and streams are highest priority
         // and long lasting so we can afford to take up some slop and let sounds adjust accordingly
 
-        const audio = new Audio(music.source);
+        const audio = new Audio(stream.source);
         audio.autoplay = true;
         audio.loop = true;
 
@@ -598,9 +598,9 @@ export class Mixdown {
         let gain = ctx.createGain();
         balance.connect(gain);
 
-        gain.gain.setValueAtTime(music.gain, ctx.currentTime);
+        gain.gain.setValueAtTime(stream.gain, ctx.currentTime);
 
-        var mixerName = optionalMixer ?? music.mixer;
+        var mixerName = optionalMixer ?? stream.mixer;
         var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
         if (mixer) {
             gain.connect(mixer.gainNode);
@@ -646,7 +646,7 @@ export class Mixdown {
         if (index.kind === "voice") {
             return this.stopSound(index);
         } else {
-            return this.stopMusic(index);
+            return this.stopStream(index);
         }
     }
 
@@ -666,7 +666,7 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
-    stopMusic(index : StreamGenerationHandle) : OperationResult {
+    stopStream(index : StreamGenerationHandle) : OperationResult {
         const stream = this.streams.get(index);
 
         if (!stream) {
@@ -798,7 +798,7 @@ export class Mixdown {
 
     private evictVoice(priority : number) : boolean {
         // we are going to nicely evict one of the currently playing sounds at
-        // a lower priority, music is counted as never to be removed
+        // a lower priority, a stream is counted as never to be removed
         // right now we're just going to evict the first thing we come across
         // in the future we might want this to be more heuristic based 
         // (e.g. evict the quietest sound with the lowest priority)
