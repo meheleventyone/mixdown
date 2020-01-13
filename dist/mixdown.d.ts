@@ -16,6 +16,17 @@ declare class GenerationalArena<T> {
     numUsedSlots(): number;
 }
 
+interface Value<T> {
+    kind: "value";
+    value: T;
+}
+interface Error<T> {
+    kind: "error";
+    error: T;
+}
+declare type Result<T, E> = Value<T> | Error<E>;
+declare type Optional<T> = T | undefined;
+
 declare enum Priority {
     Low = 0,
     Medium = 1,
@@ -29,11 +40,9 @@ interface SoundClip {
     start: number;
     end: number;
 }
-interface Definition {
-    name: string;
-}
-interface SoundDefinition extends Definition {
+interface SoundDefinition {
     kind: "sound";
+    name: string;
     priority: Priority;
     asset: string;
     gain: number;
@@ -41,20 +50,22 @@ interface SoundDefinition extends Definition {
     clip?: SoundClip;
     mixer?: string;
 }
-interface StreamDefinition extends Definition {
+interface StreamDefinition {
     kind: "stream";
+    name: string;
     source: string;
     gain: number;
     mixer?: string;
 }
-interface MixerDefinition extends Definition {
+interface MixerDefinition {
     kind: "mixer";
     name: string;
     gain: number;
     parent?: string;
 }
-interface AssetDefinition extends Definition {
+interface AssetDefinition {
     kind: "asset";
+    name: string;
     source: string;
 }
 declare type Definable = AssetDefinition | SoundDefinition | StreamDefinition | MixerDefinition;
@@ -80,16 +91,6 @@ declare class BankBuilder {
     createMixerDefinition(name: string, gain: number, parent?: string): void;
     validate(): boolean;
 }
-interface Value<T> {
-    kind: "value";
-    value: T;
-}
-interface Error<T> {
-    kind: "error";
-    error: T;
-}
-declare type Result<T, E> = Value<T> | Error<E>;
-declare type Optional<T> = T | undefined;
 declare type Playable = SoundDefinition | StreamDefinition;
 declare enum LoadBankError {
     BANK_VALIDATION_FAIL = 0
@@ -174,4 +175,4 @@ declare class Mixdown {
     private evictVoice;
 }
 
-export { AssetDefinition, Bank, BankBuilder, LoadBankError, Mixdown, Mixer, MixerDefinition, OperationResult, Optional, Playable, Priority, Result, SoundClip, SoundDefinition, SoundLoop, StreamDefinition, StreamGenerationHandle, VoiceGenerationHandle };
+export { AssetDefinition, Bank, BankBuilder, LoadBankError, Mixdown, Mixer, MixerDefinition, OperationResult, Playable, Priority, SoundClip, SoundDefinition, SoundLoop, StreamDefinition, StreamGenerationHandle, VoiceGenerationHandle };

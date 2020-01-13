@@ -1,4 +1,5 @@
 import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
+import { Result, Optional } from "./Utility";
 export declare enum Priority {
     Low = 0,
     Medium = 1,
@@ -12,11 +13,9 @@ export interface SoundClip {
     start: number;
     end: number;
 }
-interface Definition {
-    name: string;
-}
-export interface SoundDefinition extends Definition {
+export interface SoundDefinition {
     kind: "sound";
+    name: string;
     priority: Priority;
     asset: string;
     gain: number;
@@ -24,20 +23,22 @@ export interface SoundDefinition extends Definition {
     clip?: SoundClip;
     mixer?: string;
 }
-export interface StreamDefinition extends Definition {
+export interface StreamDefinition {
     kind: "stream";
+    name: string;
     source: string;
     gain: number;
     mixer?: string;
 }
-export interface MixerDefinition extends Definition {
+export interface MixerDefinition {
     kind: "mixer";
     name: string;
     gain: number;
     parent?: string;
 }
-export interface AssetDefinition extends Definition {
+export interface AssetDefinition {
     kind: "asset";
+    name: string;
     source: string;
 }
 declare type Definable = AssetDefinition | SoundDefinition | StreamDefinition | MixerDefinition;
@@ -63,16 +64,6 @@ export declare class BankBuilder {
     createMixerDefinition(name: string, gain: number, parent?: string): void;
     validate(): boolean;
 }
-interface Value<T> {
-    kind: "value";
-    value: T;
-}
-interface Error<T> {
-    kind: "error";
-    error: T;
-}
-export declare type Result<T, E> = Value<T> | Error<E>;
-export declare type Optional<T> = T | undefined;
 export declare type Playable = SoundDefinition | StreamDefinition;
 export declare enum LoadBankError {
     BANK_VALIDATION_FAIL = 0

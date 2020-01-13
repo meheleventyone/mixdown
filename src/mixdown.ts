@@ -1,8 +1,8 @@
 // A Web Audio based mixer for games.
 
-import {GenerationHandle, GenerationalArena} from "./GenerationalArena";
+import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
+import { Result, Optional } from "./Utility";
 
-// definitions
 export enum Priority {
     Low = 0,
     Medium,
@@ -19,12 +19,9 @@ export interface SoundClip {
     end : number;
 }
 
-interface Definition {
-    name : string;
-}
-
-export interface SoundDefinition extends Definition {
+export interface SoundDefinition {
     kind : "sound";
+    name : string;
     priority : Priority;
     asset : string;
     gain : number;
@@ -33,22 +30,24 @@ export interface SoundDefinition extends Definition {
     mixer? : string;
 }
 
-export interface StreamDefinition extends Definition {
+export interface StreamDefinition {
     kind : "stream";
+    name : string;
     source : string;
     gain : number;
     mixer? : string;
 }
 
-export interface MixerDefinition extends Definition {
+export interface MixerDefinition {
     kind : "mixer";
     name : string;
     gain : number;
     parent? : string;
 }
 
-export interface AssetDefinition extends Definition {
+export interface AssetDefinition {
     kind : "asset";
+    name : string;
     source : string;
 }
 
@@ -212,21 +211,6 @@ export class BankBuilder {
         return valid;
     }
 }
-
-// runtime
-interface Value<T> {
-    kind : "value";
-    value : T;
-}
-
-interface Error<T> {
-    kind : "error";
-    error : T;
-}
-
-export type Result<T, E> = Value<T> | Error<E>;
-
-export type Optional<T> = T | undefined;
 
 export type Playable = SoundDefinition | StreamDefinition;
 

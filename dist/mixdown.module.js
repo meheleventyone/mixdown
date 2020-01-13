@@ -57,7 +57,6 @@ class GenerationalArena {
 }
 
 // A Web Audio based mixer for games.
-// definitions
 var Priority;
 (function (Priority) {
     Priority[Priority["Low"] = 0] = "Low";
