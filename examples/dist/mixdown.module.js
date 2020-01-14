@@ -502,29 +502,29 @@ class Mixdown {
             this.streams.remove(handle);
         }
     }
-    stop(index) {
-        if (index.kind === "voice") {
-            return this.stopSound(index);
+    stop(handle) {
+        if (handle.kind === "voice") {
+            return this.stopSound(handle);
         }
         else {
-            return this.stopStream(index);
+            return this.stopStream(handle);
         }
     }
-    stopSound(index) {
-        const voice = this.voices.get(index);
+    stopSound(handle) {
+        const voice = this.voices.get(handle);
         if (!voice) {
             return OperationResult.DOES_NOT_EXIST;
         }
         if (voice.source.loop && voice.playOut) {
-            this.stopLoop(index);
+            this.stopLoop(handle);
         }
         else {
             voice.source.stop();
         }
         return OperationResult.SUCCESS;
     }
-    stopStream(index) {
-        const stream = this.streams.get(index);
+    stopStream(handle) {
+        const stream = this.streams.get(handle);
         if (!stream) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -532,11 +532,11 @@ class Mixdown {
         stream.gain.disconnect();
         stream.balance.disconnect();
         stream.audio.pause();
-        this.streams.remove(index);
+        this.streams.remove(handle);
         return OperationResult.SUCCESS;
     }
-    loop(index, start, end) {
-        let element = this.voices.get(index);
+    loop(handle, start, end) {
+        let element = this.voices.get(handle);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -550,8 +550,8 @@ class Mixdown {
         }
         return OperationResult.SUCCESS;
     }
-    stopLoop(index) {
-        let element = this.voices.get(index);
+    stopLoop(handle) {
+        let element = this.voices.get(handle);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -561,8 +561,8 @@ class Mixdown {
         source.loopEnd = 0;
         return OperationResult.SUCCESS;
     }
-    fadeTo(index, value, duration) {
-        let element = this.getElement(index);
+    fadeTo(handle, value, duration) {
+        let element = this.getElement(handle);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -573,19 +573,34 @@ class Mixdown {
         element.gain.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
         return OperationResult.SUCCESS;
     }
-    fadeOut(index, duration) {
-        return this.fadeTo(index, 0.001, duration);
+    fadeOut(handle, duration) {
+        return this.fadeTo(handle, 0, duration);
     }
-    gain(index, value) {
-        let element = this.getElement(index);
+    fadeOutAndRemove(handle, duration) {
+        var _a;
+        const fadeResult = this.fadeOut(handle, duration);
+        if (fadeResult !== OperationResult.SUCCESS) {
+            return fadeResult;
+        }
+        if (handle.kind === "voice") {
+            const voice = this.voices.get(handle);
+            (_a = voice) === null || _a === void 0 ? void 0 : _a.source.stop(this.context.currentTime + duration);
+        }
+        else {
+            setTimeout(() => this.stopStream(handle), duration * 1000);
+        }
+        return fadeResult;
+    }
+    gain(handle, value) {
+        let element = this.getElement(handle);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
         element.gain.gain.setValueAtTime(value, this.context.currentTime);
         return OperationResult.SUCCESS;
     }
-    balance(index, value) {
-        let element = this.getElement(index);
+    balance(handle, value) {
+        let element = this.getElement(handle);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -598,17 +613,17 @@ class Mixdown {
     getBuffer(assetName) {
         return this.assetMap[assetName];
     }
-    isPlaying(index) {
-        let element = this.getElement(index);
+    isPlaying(handle) {
+        let element = this.getElement(handle);
         return element !== undefined;
     }
-    getElement(index) {
+    getElement(handle) {
         let element = undefined;
-        if (index.kind === "voice") {
-            element = this.voices.get(index);
+        if (handle.kind === "voice") {
+            element = this.voices.get(handle);
         }
         else {
-            element = this.streams.get(index);
+            element = this.streams.get(handle);
         }
         return element;
     }

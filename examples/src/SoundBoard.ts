@@ -63,8 +63,7 @@ function music (name : string) {
         return;
     }
     if (currentMusic) {
-        // todo: fade out and stop as an option
-        mixdown.stopStream(currentMusic);
+        mixdown.fadeOutAndRemove(currentMusic, 0.5);
     }
 
     currentMusic = mixdown.playStream(name);
@@ -76,8 +75,7 @@ function ambience (name : string) {
         return;
     }
     if (currentAmbience) {
-        // todo: fade out and stop as an option
-        mixdown.stopStream(currentAmbience);
+        mixdown.fadeOutAndRemove(currentAmbience, 0.5);
     }
 
     currentAmbience = mixdown.playStream(name);
@@ -85,7 +83,7 @@ function ambience (name : string) {
 
 function stopStream(handle : Optional<StreamGenerationHandle>) {
     if (handle) {
-        mixdown.stopStream(handle);
+        mixdown.fadeOutAndRemove(handle, 0.5);
     }
 }
 

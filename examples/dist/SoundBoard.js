@@ -46,8 +46,7 @@ function music(name) {
         return;
     }
     if (currentMusic) {
-        // todo: fade out and stop as an option
-        mixdown.stopStream(currentMusic);
+        mixdown.fadeOutAndRemove(currentMusic, 0.5);
     }
     currentMusic = mixdown.playStream(name);
 }
@@ -57,14 +56,13 @@ function ambience(name) {
         return;
     }
     if (currentAmbience) {
-        // todo: fade out and stop as an option
-        mixdown.stopStream(currentAmbience);
+        mixdown.fadeOutAndRemove(currentAmbience, 0.5);
     }
     currentAmbience = mixdown.playStream(name);
 }
 function stopStream(handle) {
     if (handle) {
-        mixdown.stopStream(handle);
+        mixdown.fadeOutAndRemove(handle, 0.5);
     }
 }
 // hook ups for html
