@@ -490,49 +490,53 @@ class Mixdown {
         }
         const numStreams = this.streams.data.length;
         for (let i = 0; i < numStreams; ++i) {
-            var handle = { kind: "stream", index: i, generation: this.streams.generation[i] };
+            var handle = { index: i, generation: this.streams.generation[i] };
             let stream = this.streams.get(handle);
             if (!stream) {
                 continue;
             }
-            stream.audio.onpause = () => this.streamPausedRemove(handle);
+            stream.source.disconnect();
+            stream.gain.disconnect();
+            stream.balance.disconnect();
             stream.audio.pause();
             this.streams.remove(handle);
         }
     }
-    stop(handle) {
-        if (handle.kind === "voice") {
-            return this.stopSound(handle);
+    stop(index) {
+        if (index.kind === "voice") {
+            return this.stopSound(index);
         }
         else {
-            return this.stopStream(handle);
+            return this.stopStream(index);
         }
     }
-    stopSound(handle) {
-        const voice = this.voices.get(handle);
+    stopSound(index) {
+        const voice = this.voices.get(index);
         if (!voice) {
             return OperationResult.DOES_NOT_EXIST;
         }
         if (voice.source.loop && voice.playOut) {
-            this.stopLoop(handle);
+            this.stopLoop(index);
         }
         else {
             voice.source.stop();
         }
         return OperationResult.SUCCESS;
     }
-    stopStream(handle) {
-        const stream = this.streams.get(handle);
+    stopStream(index) {
+        const stream = this.streams.get(index);
         if (!stream) {
             return OperationResult.DOES_NOT_EXIST;
         }
-        stream.audio.onpause = () => this.streamPausedRemove(handle);
+        stream.source.disconnect();
+        stream.gain.disconnect();
+        stream.balance.disconnect();
         stream.audio.pause();
-        this.streams.remove(handle);
+        this.streams.remove(index);
         return OperationResult.SUCCESS;
     }
-    loop(handle, start, end) {
-        let element = this.voices.get(handle);
+    loop(index, start, end) {
+        let element = this.voices.get(index);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -546,8 +550,8 @@ class Mixdown {
         }
         return OperationResult.SUCCESS;
     }
-    stopLoop(handle) {
-        let element = this.voices.get(handle);
+    stopLoop(index) {
+        let element = this.voices.get(index);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -557,8 +561,8 @@ class Mixdown {
         source.loopEnd = 0;
         return OperationResult.SUCCESS;
     }
-    fadeTo(handle, value, duration) {
-        let element = this.getElement(handle);
+    fadeTo(index, value, duration) {
+        let element = this.getElement(index);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -569,19 +573,19 @@ class Mixdown {
         element.gain.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
         return OperationResult.SUCCESS;
     }
-    fadeOut(handle, duration) {
-        return this.fadeTo(handle, 0.001, duration);
+    fadeOut(index, duration) {
+        return this.fadeTo(index, 0.001, duration);
     }
-    gain(handle, value) {
-        let element = this.getElement(handle);
+    gain(index, value) {
+        let element = this.getElement(index);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
         element.gain.gain.setValueAtTime(value, this.context.currentTime);
         return OperationResult.SUCCESS;
     }
-    balance(handle, value) {
-        let element = this.getElement(handle);
+    balance(index, value) {
+        let element = this.getElement(index);
         if (!element) {
             return OperationResult.DOES_NOT_EXIST;
         }
@@ -594,17 +598,17 @@ class Mixdown {
     getBuffer(assetName) {
         return this.assetMap[assetName];
     }
-    isPlaying(handle) {
-        let element = this.getElement(handle);
+    isPlaying(index) {
+        let element = this.getElement(index);
         return element !== undefined;
     }
-    getElement(handle) {
+    getElement(index) {
         let element = undefined;
-        if (handle.kind === "voice") {
-            element = this.voices.get(handle);
+        if (index.kind === "voice") {
+            element = this.voices.get(index);
         }
         else {
-            element = this.streams.get(handle);
+            element = this.streams.get(index);
         }
         return element;
     }
@@ -618,16 +622,6 @@ class Mixdown {
         voice.gain.disconnect();
         voice.balance.disconnect();
         this.voices.remove(handle);
-    }
-    streamPausedRemove(handle) {
-        let stream = this.streams.get(handle);
-        if (!stream) {
-            return;
-        }
-        stream.source.disconnect();
-        stream.gain.disconnect();
-        stream.balance.disconnect();
-        this.streams.remove(handle);
     }
     evictVoice(priority) {
         // we are going to nicely evict one of the currently playing sounds at
