@@ -158,20 +158,21 @@ declare class Mixdown {
     playSoundDef(sound: SoundDefinition, optionalMixer?: string): Optional<VoiceGenerationHandle>;
     playStreamDef(stream: StreamDefinition, optionalMixer?: string): Optional<StreamGenerationHandle>;
     stopAll(): void;
-    stop(index: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
-    stopSound(index: VoiceGenerationHandle): OperationResult;
-    stopStream(index: StreamGenerationHandle): OperationResult;
-    loop(index: VoiceGenerationHandle, start?: number, end?: number): OperationResult;
-    stopLoop(index: VoiceGenerationHandle): OperationResult;
-    fadeTo(index: VoiceGenerationHandle | StreamGenerationHandle, value: number, duration: number): OperationResult;
-    fadeOut(index: VoiceGenerationHandle | StreamGenerationHandle, duration: number): OperationResult;
-    gain(index: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
-    balance(index: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
+    stop(handle: VoiceGenerationHandle | StreamGenerationHandle): OperationResult;
+    stopSound(handle: VoiceGenerationHandle): OperationResult;
+    stopStream(handle: StreamGenerationHandle): OperationResult;
+    loop(handle: VoiceGenerationHandle, start?: number, end?: number): OperationResult;
+    stopLoop(handle: VoiceGenerationHandle): OperationResult;
+    fadeTo(handle: VoiceGenerationHandle | StreamGenerationHandle, value: number, duration: number): OperationResult;
+    fadeOut(handle: VoiceGenerationHandle | StreamGenerationHandle, duration: number): OperationResult;
+    gain(handle: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
+    balance(handle: VoiceGenerationHandle | StreamGenerationHandle, value: number): OperationResult;
     numFreeSlots(): number;
     getBuffer(assetName: string): AudioBuffer | undefined;
-    isPlaying(index: VoiceGenerationHandle | StreamGenerationHandle): boolean;
+    isPlaying(handle: VoiceGenerationHandle | StreamGenerationHandle): boolean;
     private getElement;
     private voiceEnded;
+    private streamPausedRemove;
     private evictVoice;
 }
 

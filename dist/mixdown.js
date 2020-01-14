@@ -493,53 +493,49 @@
             }
             const numStreams = this.streams.data.length;
             for (let i = 0; i < numStreams; ++i) {
-                var handle = { index: i, generation: this.streams.generation[i] };
+                var handle = { kind: "stream", index: i, generation: this.streams.generation[i] };
                 let stream = this.streams.get(handle);
                 if (!stream) {
                     continue;
                 }
-                stream.source.disconnect();
-                stream.gain.disconnect();
-                stream.balance.disconnect();
+                stream.audio.onpause = () => this.streamPausedRemove(handle);
                 stream.audio.pause();
                 this.streams.remove(handle);
             }
         }
-        stop(index) {
-            if (index.kind === "voice") {
-                return this.stopSound(index);
+        stop(handle) {
+            if (handle.kind === "voice") {
+                return this.stopSound(handle);
             }
             else {
-                return this.stopStream(index);
+                return this.stopStream(handle);
             }
         }
-        stopSound(index) {
-            const voice = this.voices.get(index);
+        stopSound(handle) {
+            const voice = this.voices.get(handle);
             if (!voice) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
             if (voice.source.loop && voice.playOut) {
-                this.stopLoop(index);
+                this.stopLoop(handle);
             }
             else {
                 voice.source.stop();
             }
             return exports.OperationResult.SUCCESS;
         }
-        stopStream(index) {
-            const stream = this.streams.get(index);
+        stopStream(handle) {
+            const stream = this.streams.get(handle);
             if (!stream) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
-            stream.source.disconnect();
-            stream.gain.disconnect();
-            stream.balance.disconnect();
+            stream.audio.onpause = () => this.streamPausedRemove(handle);
             stream.audio.pause();
-            this.streams.remove(index);
+            this.streams.remove(handle);
             return exports.OperationResult.SUCCESS;
         }
-        loop(index, start, end) {
-            let element = this.voices.get(index);
+        loop(handle, start, end) {
+            let element = this.voices.get(handle);
             if (!element) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
@@ -553,8 +549,8 @@
             }
             return exports.OperationResult.SUCCESS;
         }
-        stopLoop(index) {
-            let element = this.voices.get(index);
+        stopLoop(handle) {
+            let element = this.voices.get(handle);
             if (!element) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
@@ -564,8 +560,8 @@
             source.loopEnd = 0;
             return exports.OperationResult.SUCCESS;
         }
-        fadeTo(index, value, duration) {
-            let element = this.getElement(index);
+        fadeTo(handle, value, duration) {
+            let element = this.getElement(handle);
             if (!element) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
@@ -576,19 +572,19 @@
             element.gain.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
             return exports.OperationResult.SUCCESS;
         }
-        fadeOut(index, duration) {
-            return this.fadeTo(index, 0.001, duration);
+        fadeOut(handle, duration) {
+            return this.fadeTo(handle, 0.001, duration);
         }
-        gain(index, value) {
-            let element = this.getElement(index);
+        gain(handle, value) {
+            let element = this.getElement(handle);
             if (!element) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
             element.gain.gain.setValueAtTime(value, this.context.currentTime);
             return exports.OperationResult.SUCCESS;
         }
-        balance(index, value) {
-            let element = this.getElement(index);
+        balance(handle, value) {
+            let element = this.getElement(handle);
             if (!element) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
@@ -601,17 +597,17 @@
         getBuffer(assetName) {
             return this.assetMap[assetName];
         }
-        isPlaying(index) {
-            let element = this.getElement(index);
+        isPlaying(handle) {
+            let element = this.getElement(handle);
             return element !== undefined;
         }
-        getElement(index) {
+        getElement(handle) {
             let element = undefined;
-            if (index.kind === "voice") {
-                element = this.voices.get(index);
+            if (handle.kind === "voice") {
+                element = this.voices.get(handle);
             }
             else {
-                element = this.streams.get(index);
+                element = this.streams.get(handle);
             }
             return element;
         }
@@ -625,6 +621,16 @@
             voice.gain.disconnect();
             voice.balance.disconnect();
             this.voices.remove(handle);
+        }
+        streamPausedRemove(handle) {
+            let stream = this.streams.get(handle);
+            if (!stream) {
+                return;
+            }
+            stream.source.disconnect();
+            stream.gain.disconnect();
+            stream.balance.disconnect();
+            this.streams.remove(handle);
         }
         evictVoice(priority) {
             // we are going to nicely evict one of the currently playing sounds at
