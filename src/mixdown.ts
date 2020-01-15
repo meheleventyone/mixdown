@@ -287,7 +287,7 @@ export class Mixer {
 }
 
 export class Mixdown {
-    context : AudioContext = new AudioContext();
+    context : AudioContext;
 
     bank : Bank | undefined;
     assetMap : Record<string, AudioBuffer | undefined> = {};
@@ -303,6 +303,14 @@ export class Mixdown {
     removalFadeDuration : number = 0.2;
 
     constructor(maxSounds : number = 32, maxStreams = 2, slopSize : number = 4) {
+        // use of any as a fix for safari having old names
+        const audioContextConstructor = window.AudioContext ?? (window as any).webkitAudioContext;
+
+        if (!audioContextConstructor) {
+            throw new Error("Mixdown: Could not find a valid AudioContext constructor.");
+        }
+
+        this.context = new audioContextConstructor();
         this.maxSounds = maxSounds;
         this.slopSize = slopSize;
 

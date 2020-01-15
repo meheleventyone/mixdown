@@ -241,10 +241,13 @@ class Mixer {
 }
 class Mixdown {
     constructor(maxSounds = 32, maxStreams = 2, slopSize = 4) {
-        this.context = new AudioContext();
+        var _a;
         this.assetMap = {};
         this.mixerMap = {};
         this.removalFadeDuration = 0.2;
+        // use of any as a fix for safari having old names
+        const audioContextConstructor = (_a = window.AudioContext, (_a !== null && _a !== void 0 ? _a : window.webkitAudioContext));
+        this.context = new audioContextConstructor();
         this.maxSounds = maxSounds;
         this.slopSize = slopSize;
         this.masterMixer = new Mixer(this.context, "master");
@@ -587,7 +590,7 @@ class Mixdown {
             (_a = voice) === null || _a === void 0 ? void 0 : _a.source.stop(this.context.currentTime + duration);
         }
         else {
-            setTimeout(() => this.stopStream(handle), duration * 1000);
+            setTimeout(() => this.stopStream(handle), duration * 1000); // lack of accuracy of setTimeout might be an issue
         }
         return fadeResult;
     }
