@@ -2,6 +2,7 @@
 
 import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
 import { Result, Optional } from "./Utility";
+import { MixdownStereoPanner } from "./SafariHacks";
 
 export enum Priority {
     Low = 0,
@@ -225,7 +226,7 @@ export enum OperationResult {
 
 interface Voice {
     gain : GainNode;
-    balance : StereoPannerNode;
+    balance : MixdownStereoPanner;
     source : AudioBufferSourceNode;
     priority : Priority;
     playOut : boolean;
@@ -233,7 +234,7 @@ interface Voice {
 
 interface Stream {
     gain: GainNode;
-    balance: StereoPannerNode;
+    balance: MixdownStereoPanner;
     source: MediaElementAudioSourceNode;
     audio: HTMLAudioElement;
 }
@@ -523,11 +524,12 @@ export class Mixdown {
             }
         }
 
-        let balance = ctx.createStereoPanner();
-        source.connect(balance);
+        const balance = this.createStereoPanner();
+        const balanceAudioNode = balance.getAudioNode();
+        source.connect(balanceAudioNode);
 
         let gain = ctx.createGain();
-        balance.connect(gain);
+        balanceAudioNode.connect(gain);
 
         gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
 
@@ -589,11 +591,12 @@ export class Mixdown {
 
         let source = ctx.createMediaElementSource(audio);
 
-        let balance = ctx.createStereoPanner();
-        source.connect(balance);
+        const balance = this.createStereoPanner();
+        const balanceAudioNode = balance.getAudioNode();
+        source.connect(balanceAudioNode);
 
         let gain = ctx.createGain();
-        balance.connect(gain);
+        balanceAudioNode.connect(gain);
 
         gain.gain.setValueAtTime(stream.gain, ctx.currentTime);
 
@@ -633,7 +636,7 @@ export class Mixdown {
             }
             stream.source.disconnect();
             stream.gain.disconnect();
-            stream.balance.disconnect();
+            stream.balance.getAudioNode().disconnect();
             stream.audio.pause();
             this.streams.remove(handle);
         }
@@ -672,7 +675,7 @@ export class Mixdown {
 
         stream.source.disconnect();
         stream.gain.disconnect();
-        stream.balance.disconnect();
+        stream.balance.getAudioNode().disconnect();
         stream.audio.pause();
         
         this.streams.remove(handle);
@@ -768,7 +771,7 @@ export class Mixdown {
             return OperationResult.DOES_NOT_EXIST;
         }
 
-        element.balance.pan.setValueAtTime(value, this.context.currentTime);
+        element.balance.pan = value;
         return OperationResult.SUCCESS;
     }
 
@@ -783,6 +786,11 @@ export class Mixdown {
     isPlaying(handle : VoiceGenerationHandle | StreamGenerationHandle) : boolean {
         let element = this.getElement(handle);
         return element !== undefined;
+    }
+
+    private createStereoPanner() : MixdownStereoPanner {
+        // hack: safari doesn't support the stereopanner node
+        return new MixdownStereoPanner(this.context);
     }
 
     private getElement(handle : VoiceGenerationHandle | StreamGenerationHandle) : Optional<Voice | Stream> {
@@ -805,7 +813,7 @@ export class Mixdown {
         voice.source.disconnect();
         voice.source.buffer = null;
         voice.gain.disconnect();
-        voice.balance.disconnect();
+        voice.balance.getAudioNode().disconnect();
         
         this.voices.remove(handle);
     }
