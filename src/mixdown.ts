@@ -303,7 +303,7 @@ export class Mixdown {
     removalFadeDuration : number = 0.2;
 
     constructor(maxSounds : number = 32, maxStreams = 2, slopSize : number = 4) {
-        // use of any as a fix for safari having old names
+        // hack: use of any as a fix for safari having old names
         const audioContextConstructor = window.AudioContext ?? (window as any).webkitAudioContext;
 
         if (!audioContextConstructor) {
@@ -325,13 +325,18 @@ export class Mixdown {
     }
 
     loadAsset(name : string, path : string) : Promise<boolean> {
-        // todo: make sure we're loading something we support
+        // todo: make sure we're loading a format the browser supports
         // todo: xmlhttprequest for backwards compat?
+
+        // hack: safari doesn't support the promise version of decodeAudioData so promisify the callback version
+        const decodeAudioData = (data : ArrayBuffer) => { return new Promise<AudioBuffer>((resolve, reject) => {
+            this.context.decodeAudioData(data, (buffer) => resolve(buffer), (reason) => reject(reason));
+        }); }
 
         return new Promise((resolve, reject) => {
             fetch(path)
             .then(response => response.arrayBuffer())
-            .then(data => this.context.decodeAudioData(data))
+            .then(data => decodeAudioData(data))
             .then(buffer => {
                 this.assetMap[name] = buffer;
                 resolve(true);
