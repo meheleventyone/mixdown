@@ -1,5 +1,6 @@
 import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
 import { Result, Optional } from "./Utility";
+import { MixdownStereoPanner } from "./SafariHacks";
 export declare enum Priority {
     Low = 0,
     Medium = 1,
@@ -74,14 +75,14 @@ export declare enum OperationResult {
 }
 interface Voice {
     gain: GainNode;
-    balance: StereoPannerNode;
+    balance: MixdownStereoPanner;
     source: AudioBufferSourceNode;
     priority: Priority;
     playOut: boolean;
 }
 interface Stream {
     gain: GainNode;
-    balance: StereoPannerNode;
+    balance: MixdownStereoPanner;
     source: MediaElementAudioSourceNode;
     audio: HTMLAudioElement;
 }
@@ -144,6 +145,7 @@ export declare class Mixdown {
     numFreeSlots(): number;
     getBuffer(assetName: string): AudioBuffer | undefined;
     isPlaying(handle: VoiceGenerationHandle | StreamGenerationHandle): boolean;
+    private createStereoPanner;
     private getElement;
     private voiceEnded;
     private evictVoice;

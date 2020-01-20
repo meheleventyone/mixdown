@@ -27,6 +27,23 @@ interface Error<T> {
 declare type Result<T, E> = Value<T> | Error<E>;
 declare type Optional<T> = T | undefined;
 
+interface SafariNode {
+    kind: "safari";
+    panner: PannerNode;
+}
+interface StereoNode {
+    kind: "stereopanner";
+    stereoPanner: StereoPannerNode;
+}
+declare class MixdownStereoPanner {
+    _panner: SafariNode | StereoNode;
+    _pan: number;
+    get pan(): number;
+    set pan(value: number);
+    constructor(context: AudioContext);
+    getAudioNode(): AudioNode;
+}
+
 declare enum Priority {
     Low = 0,
     Medium = 1,
@@ -101,14 +118,14 @@ declare enum OperationResult {
 }
 interface Voice {
     gain: GainNode;
-    balance: StereoPannerNode;
+    balance: MixdownStereoPanner;
     source: AudioBufferSourceNode;
     priority: Priority;
     playOut: boolean;
 }
 interface Stream {
     gain: GainNode;
-    balance: StereoPannerNode;
+    balance: MixdownStereoPanner;
     source: MediaElementAudioSourceNode;
     audio: HTMLAudioElement;
 }
@@ -171,6 +188,7 @@ declare class Mixdown {
     numFreeSlots(): number;
     getBuffer(assetName: string): AudioBuffer | undefined;
     isPlaying(handle: VoiceGenerationHandle | StreamGenerationHandle): boolean;
+    private createStereoPanner;
     private getElement;
     private voiceEnded;
     private evictVoice;

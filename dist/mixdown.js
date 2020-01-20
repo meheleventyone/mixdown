@@ -62,6 +62,47 @@
         }
     }
 
+    function clamp(value, min, max) {
+        return Math.min(Math.max(min, value), max);
+    }
+    // note: on safari this is probably not going to mix well with anything that moves
+    // the listener position around, at that point we would need to adjust all
+    // MixdownStereoPanner nodes to be offset from that position 
+    class MixdownStereoPanner {
+        constructor(context) {
+            this._pan = 0;
+            if (!context.createStereoPanner) {
+                this._panner = { kind: "safari", panner: context.createPanner() };
+                this._panner.panner.panningModel = 'equalpower';
+            }
+            else {
+                this._panner = { kind: "stereopanner", stereoPanner: context.createStereoPanner() };
+            }
+        }
+        get pan() {
+            return this._pan;
+        }
+        set pan(value) {
+            this._pan = clamp(value, -1, 1);
+            if (this._panner.kind === "stereopanner") {
+                this._panner.stereoPanner.pan.value = this._pan;
+                return;
+            }
+            // we want to set the pan position to the correct offset whilst remaining equidistant from the listener
+            // hence moving the z position to keep the sound a length of 1 from the listener, otherwise it would get louder
+            // in the middle than at the sides
+            this._panner.panner.setPosition(this._pan, 0, 1 - Math.abs(this._pan));
+        }
+        getAudioNode() {
+            if (this._panner.kind === "stereopanner") {
+                return this._panner.stereoPanner;
+            }
+            else {
+                return this._panner.panner;
+            }
+        }
+    }
+
     // A Web Audio based mixer for games.
     (function (Priority) {
         Priority[Priority["Low"] = 0] = "Low";
@@ -248,7 +289,7 @@
             this.assetMap = {};
             this.mixerMap = {};
             this.removalFadeDuration = 0.2;
-            // use of any as a fix for safari having old names
+            // hack: use of any as a fix for safari having old names
             const audioContextConstructor = (_a = window.AudioContext, (_a !== null && _a !== void 0 ? _a : window.webkitAudioContext));
             if (!audioContextConstructor) {
                 throw new Error("Mixdown: Could not find a valid AudioContext constructor.");
@@ -265,12 +306,18 @@
             this.streams = new GenerationalArena(maxStreams);
         }
         loadAsset(name, path) {
-            // todo: make sure we're loading something we support
+            // todo: make sure we're loading a format the browser supports
             // todo: xmlhttprequest for backwards compat?
+            // hack: safari doesn't support the promise version of decodeAudioData so promisify the callback version
+            const decodeAudioData = (data) => {
+                return new Promise((resolve, reject) => {
+                    this.context.decodeAudioData(data, (buffer) => resolve(buffer), (reason) => reject(reason));
+                });
+            };
             return new Promise((resolve, reject) => {
                 fetch(path)
                     .then(response => response.arrayBuffer())
-                    .then(data => this.context.decodeAudioData(data))
+                    .then(data => decodeAudioData(data))
                     .then(buffer => {
                     this.assetMap[name] = buffer;
                     resolve(true);
@@ -421,10 +468,11 @@
                     source.loopEnd = sound.clip.end;
                 }
             }
-            let balance = ctx.createStereoPanner();
-            source.connect(balance);
+            const balance = this.createStereoPanner();
+            const balanceAudioNode = balance.getAudioNode();
+            source.connect(balanceAudioNode);
             let gain = ctx.createGain();
-            balance.connect(gain);
+            balanceAudioNode.connect(gain);
             gain.gain.setValueAtTime(sound.gain, ctx.currentTime);
             var mixerName = (optionalMixer !== null && optionalMixer !== void 0 ? optionalMixer : sound.mixer);
             var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
@@ -471,10 +519,11 @@
             audio.loop = true;
             const ctx = this.context;
             let source = ctx.createMediaElementSource(audio);
-            let balance = ctx.createStereoPanner();
-            source.connect(balance);
+            const balance = this.createStereoPanner();
+            const balanceAudioNode = balance.getAudioNode();
+            source.connect(balanceAudioNode);
             let gain = ctx.createGain();
-            balance.connect(gain);
+            balanceAudioNode.connect(gain);
             gain.gain.setValueAtTime(stream.gain, ctx.currentTime);
             var mixerName = (optionalMixer !== null && optionalMixer !== void 0 ? optionalMixer : stream.mixer);
             var mixer = mixerName ? this.getMixer(mixerName) : this.masterMixer;
@@ -506,7 +555,7 @@
                 }
                 stream.source.disconnect();
                 stream.gain.disconnect();
-                stream.balance.disconnect();
+                stream.balance.getAudioNode().disconnect();
                 stream.audio.pause();
                 this.streams.remove(handle);
             }
@@ -539,7 +588,7 @@
             }
             stream.source.disconnect();
             stream.gain.disconnect();
-            stream.balance.disconnect();
+            stream.balance.getAudioNode().disconnect();
             stream.audio.pause();
             this.streams.remove(handle);
             return exports.OperationResult.SUCCESS;
@@ -613,7 +662,7 @@
             if (!element) {
                 return exports.OperationResult.DOES_NOT_EXIST;
             }
-            element.balance.pan.setValueAtTime(value, this.context.currentTime);
+            element.balance.pan = value;
             return exports.OperationResult.SUCCESS;
         }
         numFreeSlots() {
@@ -625,6 +674,10 @@
         isPlaying(handle) {
             let element = this.getElement(handle);
             return element !== undefined;
+        }
+        createStereoPanner() {
+            // hack: safari doesn't support the stereopanner node
+            return new MixdownStereoPanner(this.context);
         }
         getElement(handle) {
             let element = undefined;
@@ -644,7 +697,7 @@
             voice.source.disconnect();
             voice.source.buffer = null;
             voice.gain.disconnect();
-            voice.balance.disconnect();
+            voice.balance.getAudioNode().disconnect();
             this.voices.remove(handle);
         }
         evictVoice(priority) {
