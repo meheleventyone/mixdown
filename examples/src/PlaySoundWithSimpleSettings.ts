@@ -1,7 +1,7 @@
 import {Mixdown, Priority} from "../dist/mixdown.module.js"
 
 let mixdown = new Mixdown();
-mixdown.loadAsset("twang", "../assets/twang.wav").then(result => initialized = result);
+mixdown.loadAsset("moo", "../assets/moo.mp3").then(result => initialized = result);
 
 let gain = 1;
 let initialized = false;
@@ -11,7 +11,7 @@ function unlock() {
         return;
     }
     mixdown.resume();
-    mixdown.playSoundDef({kind: "sound", name: "twang", asset:"twang", gain: gain, priority:Priority.High});
+    mixdown.playSoundDef({kind: "sound", name: "moo", asset:"moo", gain: gain, priority:Priority.High});
 }
 
 function gainChanged(event : Event) {

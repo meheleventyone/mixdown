@@ -107,9 +107,9 @@ if (fadeDurationSlider) {
 var mixdown = new Mixdown();
 var initialized = false;
 var buffer = undefined;
-mixdown.loadAsset("twang", "../assets/twang.wav").then(function (result) {
+mixdown.loadAsset("moo", "../assets/moo.mp3").then(function (result) {
     initialized = result;
-    buffer = mixdown.getBuffer("twang");
+    buffer = mixdown.getBuffer("moo");
     if (!buffer) {
         return;
     }
@@ -134,8 +134,8 @@ function play() {
     mixdown.resume();
     var sound = {
         kind: "sound",
-        name: "twang",
-        asset: "twang",
+        name: "moo",
+        asset: "moo",
         gain: gain,
         priority: Priority.High
     };

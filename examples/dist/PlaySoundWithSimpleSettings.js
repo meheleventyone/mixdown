@@ -1,6 +1,6 @@
 import { Mixdown, Priority } from "../dist/mixdown.module.js";
 var mixdown = new Mixdown();
-mixdown.loadAsset("twang", "../assets/twang.wav").then(function (result) { return initialized = result; });
+mixdown.loadAsset("moo", "../assets/moo.mp3").then(function (result) { return initialized = result; });
 var gain = 1;
 var initialized = false;
 function unlock() {
@@ -8,7 +8,7 @@ function unlock() {
         return;
     }
     mixdown.resume();
-    mixdown.playSoundDef({ kind: "sound", name: "twang", asset: "twang", gain: gain, priority: Priority.High });
+    mixdown.playSoundDef({ kind: "sound", name: "moo", asset: "moo", gain: gain, priority: Priority.High });
 }
 function gainChanged(event) {
     gain = parseFloat(event.currentTarget.value);
