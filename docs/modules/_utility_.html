@@ -95,13 +95,27 @@
 					<div class="tsd-signature tsd-kind-icon">Optional&lt;T&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/c485c18/src/Utility.ts#L10">Utility.ts:10</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/Utility.ts#L48">Utility.ts:48</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>An Optional type representing a value that may or may not be set.</p>
+						</div>
+						<p>Simple to check for a valid value:</p>
+						<pre><code class="language-typescript"><span class="hljs-keyword">if</span> (optionalValue !== <span class="hljs-literal">undefined</span>) {
+     <span class="hljs-comment">// do something</span>
+}</code></pre>
+					</div>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
 					<ul class="tsd-type-parameters">
 						<li>
 							<h4>T</h4>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>the type of the value if set.</p>
+								</div>
+							</div>
 						</li>
 					</ul>
 				</section>
@@ -111,16 +125,38 @@
 					<div class="tsd-signature tsd-kind-icon">Result&lt;T, E&gt;<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_utility_.value.html" class="tsd-signature-type">Value</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/_utility_.error.html" class="tsd-signature-type">Error</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/c485c18/src/Utility.ts#L9">Utility.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/Utility.ts#L34">Utility.ts:34</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>A Result type representing a discriminated union of a successful value being returned from a function or an error.</p>
+						</div>
+						<p>Checking for value or error:</p>
+						<pre><code class="language-typescript"><span class="hljs-keyword">const</span> result = someFunctionThatReturnsResult();
+<span class="hljs-keyword">if</span> (result.kind === <span class="hljs-string">"value"</span>) {
+     <span class="hljs-comment">// can use result.value</span>
+} <span class="hljs-keyword">else</span> {
+     <span class="hljs-comment">// can use result.error</span>
+}</code></pre>
+					</div>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
 					<ul class="tsd-type-parameters">
 						<li>
 							<h4>T</h4>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>The type of the value to be returned.</p>
+								</div>
+							</div>
 						</li>
 						<li>
 							<h4>E</h4>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>The type of the error to be returned in the event that the function fails.</p>
+								</div>
+							</div>
 						</li>
 					</ul>
 				</section>
@@ -134,6 +170,9 @@
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="_generationalarena_.html">&quot;<wbr>Generational<wbr>Arena&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="_safarihacks_.html">&quot;<wbr>Safari<wbr>Hacks&quot;</a>
 					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="_utility_.html">&quot;<wbr>Utility&quot;</a>

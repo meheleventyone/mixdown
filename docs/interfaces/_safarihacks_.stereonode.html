@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Stream | mixdown - v0.0.1</title>
+	<title>StereoNode | mixdown - v0.0.1</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,24 +56,32 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_mixdown_.html">&quot;mixdown&quot;</a>
+					<a href="../modules/_safarihacks_.html">&quot;SafariHacks&quot;</a>
 				</li>
 				<li>
-					<a href="_mixdown_.stream.html">Stream</a>
+					<a href="_safarihacks_.stereonode.html">StereoNode</a>
 				</li>
 			</ul>
-			<h1>Interface Stream</h1>
+			<h1>Interface StereoNode</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Part of the <a href="../modules/_safarihacks_.html#mixdownstereopannernode">MixdownStereoPannerNode</a> discriminated union.</p>
+					</div>
+					<p>This is for all non-Safari implementations using the WebAudio StereoPannerNode.</p>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Stream</span>
+						<span class="target">StereoNode</span>
 					</li>
 				</ul>
 			</section>
@@ -84,10 +92,8 @@
 						<section class="tsd-index-section tsd-is-not-exported">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="_mixdown_.stream.html#audio" class="tsd-kind-icon">audio</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="_mixdown_.stream.html#balance" class="tsd-kind-icon">balance</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="_mixdown_.stream.html#gain" class="tsd-kind-icon">gain</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="_mixdown_.stream.html#source" class="tsd-kind-icon">source</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="_safarihacks_.stereonode.html#kind" class="tsd-kind-icon">kind</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported"><a href="_safarihacks_.stereonode.html#stereopanner" class="tsd-kind-icon">stereo<wbr>Panner</a></li>
 							</ul>
 						</section>
 					</div>
@@ -96,42 +102,22 @@
 			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="audio" class="tsd-anchor"></a>
-					<h3>audio</h3>
-					<div class="tsd-signature tsd-kind-icon">audio<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">HTMLAudioElement</span></div>
+					<a name="kind" class="tsd-anchor"></a>
+					<h3>kind</h3>
+					<div class="tsd-signature tsd-kind-icon">kind<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"stereopanner"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/mixdown.ts#L242">mixdown.ts:242</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/SafariHacks.ts#L33">SafariHacks.ts:33</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="balance" class="tsd-anchor"></a>
-					<h3>balance</h3>
-					<div class="tsd-signature tsd-kind-icon">balance<span class="tsd-signature-symbol">:</span> <a href="../classes/_safarihacks_.mixdownstereopanner.html" class="tsd-signature-type">MixdownStereoPanner</a></div>
+					<a name="stereopanner" class="tsd-anchor"></a>
+					<h3>stereo<wbr>Panner</h3>
+					<div class="tsd-signature tsd-kind-icon">stereo<wbr>Panner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">StereoPannerNode</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/mixdown.ts#L240">mixdown.ts:240</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="gain" class="tsd-anchor"></a>
-					<h3>gain</h3>
-					<div class="tsd-signature tsd-kind-icon">gain<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">GainNode</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/mixdown.ts#L239">mixdown.ts:239</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-					<a name="source" class="tsd-anchor"></a>
-					<h3>source</h3>
-					<div class="tsd-signature tsd-kind-icon">source<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">MediaElementAudioSourceNode</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/mixdown.ts#L241">mixdown.ts:241</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/d3654f4/src/SafariHacks.ts#L34">SafariHacks.ts:34</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -146,93 +132,45 @@
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/_generationalarena_.html">&quot;<wbr>Generational<wbr>Arena&quot;</a>
 					</li>
-					<li class=" tsd-kind-external-module">
+					<li class="current tsd-kind-external-module">
 						<a href="../modules/_safarihacks_.html">&quot;<wbr>Safari<wbr>Hacks&quot;</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/_utility_.html">&quot;<wbr>Utility&quot;</a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class=" tsd-kind-external-module">
 						<a href="../modules/_mixdown_.html">&quot;mixdown&quot;</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-enum tsd-parent-kind-external-module">
-						<a href="../enums/_mixdown_.loadbankerror.html" class="tsd-kind-icon">Load<wbr>Bank<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-enum tsd-parent-kind-external-module">
-						<a href="../enums/_mixdown_.operationresult.html" class="tsd-kind-icon">Operation<wbr>Result</a>
-					</li>
-					<li class=" tsd-kind-enum tsd-parent-kind-external-module">
-						<a href="../enums/_mixdown_.priority.html" class="tsd-kind-icon">Priority</a>
-					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_mixdown_.bank.html" class="tsd-kind-icon">Bank</a>
+						<a href="../classes/_safarihacks_.mixdownstereopanner.html" class="tsd-kind-icon">Mixdown<wbr>Stereo<wbr>Panner</a>
 					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_mixdown_.bankbuilder.html" class="tsd-kind-icon">Bank<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_mixdown_.mixdown.html" class="tsd-kind-icon">Mixdown</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_mixdown_.mixer.html" class="tsd-kind-icon">Mixer</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_mixdown_.assetdefinition.html" class="tsd-kind-icon">Asset<wbr>Definition</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_mixdown_.mixerdefinition.html" class="tsd-kind-icon">Mixer<wbr>Definition</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_mixdown_.soundclip.html" class="tsd-kind-icon">Sound<wbr>Clip</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_mixdown_.sounddefinition.html" class="tsd-kind-icon">Sound<wbr>Definition</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_mixdown_.soundloop.html" class="tsd-kind-icon">Sound<wbr>Loop</a>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module tsd-is-not-exported">
+						<a href="_safarihacks_.safarinode.html" class="tsd-kind-icon">Safari<wbr>Node</a>
 					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-external-module tsd-is-not-exported">
-						<a href="_mixdown_.stream.html" class="tsd-kind-icon">Stream</a>
+						<a href="_safarihacks_.stereonode.html" class="tsd-kind-icon">Stereo<wbr>Node</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_mixdown_.stream.html#audio" class="tsd-kind-icon">audio</a>
+								<a href="_safarihacks_.stereonode.html#kind" class="tsd-kind-icon">kind</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_mixdown_.stream.html#balance" class="tsd-kind-icon">balance</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_mixdown_.stream.html#gain" class="tsd-kind-icon">gain</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-not-exported">
-								<a href="_mixdown_.stream.html#source" class="tsd-kind-icon">source</a>
+								<a href="_safarihacks_.stereonode.html#stereopanner" class="tsd-kind-icon">stereo<wbr>Panner</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_mixdown_.streamdefinition.html" class="tsd-kind-icon">Stream<wbr>Definition</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module tsd-is-not-exported">
-						<a href="_mixdown_.voice.html" class="tsd-kind-icon">Voice</a>
-					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module tsd-is-not-exported">
-						<a href="../modules/_mixdown_.html#definable" class="tsd-kind-icon">Definable</a>
+						<a href="../modules/_safarihacks_.html#mixdownstereopannernode" class="tsd-kind-icon">Mixdown<wbr>Stereo<wbr>Panner<wbr>Node</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="../modules/_mixdown_.html#playable" class="tsd-kind-icon">Playable</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="../modules/_mixdown_.html#streamgenerationhandle" class="tsd-kind-icon">Stream<wbr>Generation<wbr>Handle</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="../modules/_mixdown_.html#voicegenerationhandle" class="tsd-kind-icon">Voice<wbr>Generation<wbr>Handle</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-is-not-exported">
+						<a href="../modules/_safarihacks_.html#clamp" class="tsd-kind-icon">clamp</a>
 					</li>
 				</ul>
 			</nav>

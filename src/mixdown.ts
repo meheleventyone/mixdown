@@ -1,4 +1,7 @@
-// A Web Audio based mixer for games.
+/* 
+    A Web Audio based mixer for games.
+    @packageDocumentation
+ */
 
 import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
 import { Result, Optional } from "./Utility";
