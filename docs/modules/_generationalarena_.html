@@ -70,12 +70,29 @@
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
 						<p>A <a href="../classes/_generationalarena_.generationalarena.html">GenerationalArena</a> is a fixed size pool of values of type T. Access is controlled via
-							<a href="../interfaces/_generationalarena_.generationhandle.html">Generation Handles</a>. These are valid so long as the element they point to
+							<a href="../classes/_generationalarena_.generationhandle.html">Generation Handles</a>. These are valid so long as the element they point to
 						has not been replaced since it was issued. T</p>
 					</div>
 					<p>This is useful to prevent accidental access and modification of elements that have changed by a stale index.
 						This allows handles to be kept with a guarentee that if the element has changed it cannot be accessed by an older
 					handle pointing to the same element. In effect weakly referencing values stored in the arena.</p>
+					<p>A GenerationHandle holds two readonly numbers. The first is the index into the [[GernerationalArena]].
+					The second is the generation of element pointed to when the handle was generated.</p>
+					<p>The main point of note is that these values should not be modified after they have been handed out. Nor should
+					users create these themselves. Nor should they pass handles from one arena into a different arena.</p>
+					<p>For safety it can be a good idea to extend GenerationalHandle:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SpecificHandle <span class="hljs-keyword">extends</span> GenerationHandle {
+ <span class="hljs-keyword">constructor</span> (<span class="hljs-params">index : <span class="hljs-built_in">number</span>, generation : <span class="hljs-built_in">number</span></span>) {
+     <span class="hljs-keyword">super</span>(index, generation);
+ }
+}</code></pre>
+					<p>And then extend GenerationalArena:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">class</span> SpecificGenerationalArena&lt;T&gt; <span class="hljs-keyword">extends</span> GenerationalArena&lt;T, SpecificHandle&gt; {
+ <span class="hljs-keyword">constructor</span>(<span class="hljs-params">size : <span class="hljs-built_in">number</span></span>) {
+     <span class="hljs-keyword">super</span>(size, SpecificHandle);
+ }
+}</code></pre>
+					<p>This results in an arena that can only take the SpecificHandle type as a valid handle.</p>
 				</div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -85,13 +102,9 @@
 						<section class="tsd-index-section ">
 							<h3>Classes</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_generationalarena_.generationhandle.html" class="tsd-kind-icon">Generation<wbr>Handle</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter"><a href="../classes/_generationalarena_.generationalarena.html" class="tsd-kind-icon">Generational<wbr>Arena</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Interfaces</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-interface tsd-parent-kind-external-module"><a href="../interfaces/_generationalarena_.generationhandle.html" class="tsd-kind-icon">Generation<wbr>Handle</a></li>
+								<li class="tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter tsd-is-not-exported"><a href="../classes/_generationalarena_.simplegenerationalarena.html" class="tsd-kind-icon">Simple<wbr>Generational<wbr>Arena</a></li>
 							</ul>
 						</section>
 					</div>
@@ -120,11 +133,14 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-parent-kind-external-module">
+						<a href="../classes/_generationalarena_.generationhandle.html" class="tsd-kind-icon">Generation<wbr>Handle</a>
+					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter">
 						<a href="../classes/_generationalarena_.generationalarena.html" class="tsd-kind-icon">Generational<wbr>Arena</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="../interfaces/_generationalarena_.generationhandle.html" class="tsd-kind-icon">Generation<wbr>Handle</a>
+					<li class=" tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter tsd-is-not-exported">
+						<a href="../classes/_generationalarena_.simplegenerationalarena.html" class="tsd-kind-icon">Simple<wbr>Generational<wbr>Arena</a>
 					</li>
 				</ul>
 			</nav>
