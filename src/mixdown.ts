@@ -242,8 +242,25 @@ interface Stream {
     audio: HTMLAudioElement;
 }
 
-export type VoiceGenerationHandle = {kind : "voice"} & GenerationHandle;
-export type StreamGenerationHandle = {kind : "stream"} & GenerationHandle;
+export class VoiceGenerationHandle extends GenerationHandle {
+    kind : "voice";
+
+    constructor (index : number, generation : number) {
+        super(index, generation);
+
+        this.kind = "voice";
+    }
+}
+
+export class StreamGenerationHandle extends GenerationHandle {
+    kind : "stream";
+
+    constructor (index : number, generation : number) {
+        super(index, generation);
+
+        this.kind = "stream";
+    }
+}
 
 export class Mixer {
     context : AudioContext;
@@ -302,8 +319,8 @@ export class Mixdown {
     mixerMap : Record<string, Mixer | undefined> = {};
     masterMixer : Mixer;
 
-    voices : GenerationalArena<Voice>;
-    streams : GenerationalArena<Stream>;
+    voices : GenerationalArena<Voice, VoiceGenerationHandle>;
+    streams : GenerationalArena<Stream, StreamGenerationHandle>;
     removalFadeDuration : number = 0.2;
 
     constructor(maxSounds : number = 32, maxStreams = 2, slopSize : number = 4) {
@@ -324,8 +341,8 @@ export class Mixdown {
         // technically we'll have more playing power than maxSounds would
         // suggest but will consider the voices and streams a union and never
         // exceed maxSounds things playing together
-        this.voices = new GenerationalArena(maxSounds);
-        this.streams = new GenerationalArena(maxStreams);
+        this.voices = new GenerationalArena(maxSounds, VoiceGenerationHandle);
+        this.streams = new GenerationalArena(maxStreams, StreamGenerationHandle);
     }
 
     loadAsset(name : string, path : string) : Promise<boolean> {
@@ -632,7 +649,8 @@ export class Mixdown {
 
         const numStreams = this.streams.data.length;
         for (let i = 0; i < numStreams; ++i) {
-            var handle : GenerationHandle = {index:i, generation: this.streams.generation[i]};
+            // todo: this is technically naughty, should have some kind of enumeration
+            var handle : StreamGenerationHandle = new StreamGenerationHandle(i,this.streams.generation[i]);
             let stream = this.streams.get(handle);
             if (!stream) {
                 continue;

@@ -86,12 +86,14 @@ interface Stream {
     source: MediaElementAudioSourceNode;
     audio: HTMLAudioElement;
 }
-export declare type VoiceGenerationHandle = {
+export declare class VoiceGenerationHandle extends GenerationHandle {
     kind: "voice";
-} & GenerationHandle;
-export declare type StreamGenerationHandle = {
+    constructor(index: number, generation: number);
+}
+export declare class StreamGenerationHandle extends GenerationHandle {
     kind: "stream";
-} & GenerationHandle;
+    constructor(index: number, generation: number);
+}
 export declare class Mixer {
     context: AudioContext;
     gainNode: GainNode;
@@ -112,8 +114,8 @@ export declare class Mixdown {
     slopSize: number;
     mixerMap: Record<string, Mixer | undefined>;
     masterMixer: Mixer;
-    voices: GenerationalArena<Voice>;
-    streams: GenerationalArena<Stream>;
+    voices: GenerationalArena<Voice, VoiceGenerationHandle>;
+    streams: GenerationalArena<Stream, StreamGenerationHandle>;
     removalFadeDuration: number;
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
     loadAsset(name: string, path: string): Promise<boolean>;
