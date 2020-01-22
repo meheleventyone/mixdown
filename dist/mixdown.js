@@ -4,11 +4,55 @@
     (global = global || self, factory(global.mixdown = {}));
 }(this, (function (exports) { 'use strict';
 
+    /**
+     * A [[GenerationalArena]] is a fixed size pool of values of type T. Access is controlled via
+     * [[GenerationHandle|Generation Handles]]. These are valid so long as the element they point to
+     *  has not been replaced since it was issued. T
+     *
+     * This is useful to prevent accidental access and modification of elements that have changed by a stale index.
+     * This allows handles to be kept with a guarentee that if the element has changed it cannot be accessed by an older
+     * handle pointing to the same element. In effect weakly referencing values stored in the arena.
+     *
+     * A GenerationHandle holds two readonly numbers. The first is the index into the [[GernerationalArena]].
+     * The second is the generation of element pointed to when the handle was generated.
+     *
+     * The main point of note is that these values should not be modified after they have been handed out. Nor should
+     * users create these themselves. Nor should they pass handles from one arena into a different arena.
+     *
+     * For safety it can be a good idea to extend GenerationalHandle:
+     * ```typescript
+     * export class SpecificHandle extends GenerationHandle {
+     *      constructor (index : number, generation : number) {
+     *          super(index, generation);
+     *      }
+     * }
+     * ```
+     *
+     * And then extend GenerationalArena:
+     * ```typescript
+     * class SpecificGenerationalArena<T> extends GenerationalArena<T, SpecificHandle> {
+     *      constructor(size : number) {
+     *          super(size, SpecificHandle);
+     *      }
+     * }
+     * ```
+     *
+     * This results in an arena that can only take the SpecificHandle type as a valid handle.
+     *
+     * @packageDocumentation
+     */
+    class GenerationHandle {
+        constructor(index, generation) {
+            this.index = index;
+            this.generation = generation;
+        }
+    }
     class GenerationalArena {
-        constructor(size) {
+        constructor(size, handleConstructor) {
             this.generation = [];
             this.data = [];
             this.freeList = [];
+            this.handleConstructor = handleConstructor;
             for (let i = 0; i < size; ++i) {
                 this.generation[i] = 0;
                 this.data[i] = undefined;
@@ -21,7 +65,7 @@
             }
             let index = this.freeList.pop();
             this.data[index] = data;
-            return { index: index, generation: this.generation[index] };
+            return new this.handleConstructor(index, this.generation[index]);
         }
         get(handle) {
             if (handle.generation !== this.generation[handle.index]) {
@@ -62,14 +106,43 @@
         }
     }
 
+    /**
+     * A set of utility functions and classes to help work around deficiencies in the Safari WebAudio implementation.
+     * @packageDocumentation
+     */
+    /**
+     * Clamps a value to be within a lower and upper bound defined by min and max.
+     * @param value The input value to clamp.
+     * @param min The lower bound inclusive to clamp value to.
+     * @param max The upper bound inclusive to clamp value to.
+     * @returns The value clamped in the range min to max inclusive.
+     */
     function clamp(value, min, max) {
         return Math.min(Math.max(min, value), max);
     }
-    // note: on safari this is probably not going to mix well with anything that moves
-    // the listener position around, at that point we would need to adjust all
-    // MixdownStereoPanner nodes to be offset from that position 
+    /**
+     * MixdownStereoPanner is a wrapper over the cross-platform implementation details of StereoPannerNode.
+     *
+     * On Safari it represents the StereoPannerNode using the PannerNode using the 'equalpower' model.
+     * To correctly pan the sound it is moved along the x-axis between -1 and 1 from left to right.
+     * To keep the loudness equivalent for all positions as you would expect in purely stereo output the
+     *  distance is kept at 1 unit by offsetting the sound forward along the z-axis by 1 - abs(panValue).
+     *
+     * On other platforms it uses the standard StereoPannerNode.
+     *
+     * Note: On Safari this is probably not going to mix well with anything that moves
+     * the listener position around, at that point we would need to adjust all
+     * MixdownStereoPanner nodes to be offset from that position
+     */
     class MixdownStereoPanner {
+        /**
+         *
+         * @param context The AudioContext that [[Mixdown]] is using.
+         */
         constructor(context) {
+            /**
+              * @ignore
+              * */
             this._pan = 0;
             if (!context.createStereoPanner) {
                 this._panner = { kind: "safari", panner: context.createPanner() };
@@ -79,9 +152,15 @@
                 this._panner = { kind: "stereopanner", stereoPanner: context.createStereoPanner() };
             }
         }
+        /**
+         *  @returns The current value of the pan property.
+         */
         get pan() {
             return this._pan;
         }
+        /**
+         * @param value The value to set pan to in the underlying implementation. This is clamped in the range -1 to 1 inclusive.
+         */
         set pan(value) {
             this._pan = clamp(value, -1, 1);
             if (this._panner.kind === "stereopanner") {
@@ -93,6 +172,9 @@
             // in the middle than at the sides
             this._panner.panner.setPosition(this._pan, 0, 1 - Math.abs(this._pan));
         }
+        /**
+         * @returns A reference to the AudioNode being used by the underlying implementation.
+         */
         getAudioNode() {
             if (this._panner.kind === "stereopanner") {
                 return this._panner.stereoPanner;
@@ -103,7 +185,10 @@
         }
     }
 
-    // A Web Audio based mixer for games.
+    /*
+        A Web Audio based mixer for games.
+        @packageDocumentation
+     */
     (function (Priority) {
         Priority[Priority["Low"] = 0] = "Low";
         Priority[Priority["Medium"] = 1] = "Medium";
@@ -250,6 +335,18 @@
         OperationResult[OperationResult["SUCCESS"] = 0] = "SUCCESS";
         OperationResult[OperationResult["DOES_NOT_EXIST"] = 1] = "DOES_NOT_EXIST";
     })(exports.OperationResult || (exports.OperationResult = {}));
+    class VoiceGenerationHandle extends GenerationHandle {
+        constructor(index, generation) {
+            super(index, generation);
+            this.kind = "voice";
+        }
+    }
+    class StreamGenerationHandle extends GenerationHandle {
+        constructor(index, generation) {
+            super(index, generation);
+            this.kind = "stream";
+        }
+    }
     class Mixer {
         constructor(context, name, parent) {
             this.context = context;
@@ -302,8 +399,8 @@
             // technically we'll have more playing power than maxSounds would
             // suggest but will consider the voices and streams a union and never
             // exceed maxSounds things playing together
-            this.voices = new GenerationalArena(maxSounds);
-            this.streams = new GenerationalArena(maxStreams);
+            this.voices = new GenerationalArena(maxSounds, VoiceGenerationHandle);
+            this.streams = new GenerationalArena(maxStreams, StreamGenerationHandle);
         }
         loadAsset(name, path) {
             // todo: make sure we're loading a format the browser supports
@@ -548,7 +645,8 @@
             }
             const numStreams = this.streams.data.length;
             for (let i = 0; i < numStreams; ++i) {
-                var handle = { index: i, generation: this.streams.generation[i] };
+                // todo: this is technically naughty, should have some kind of enumeration
+                var handle = new StreamGenerationHandle(i, this.streams.generation[i]);
                 let stream = this.streams.get(handle);
                 if (!stream) {
                     continue;
@@ -722,6 +820,8 @@
     exports.BankBuilder = BankBuilder;
     exports.Mixdown = Mixdown;
     exports.Mixer = Mixer;
+    exports.StreamGenerationHandle = StreamGenerationHandle;
+    exports.VoiceGenerationHandle = VoiceGenerationHandle;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

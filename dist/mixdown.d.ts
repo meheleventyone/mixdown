@@ -1,46 +1,171 @@
-interface GenerationHandle {
+/**
+ * A [[GenerationalArena]] is a fixed size pool of values of type T. Access is controlled via
+ * [[GenerationHandle|Generation Handles]]. These are valid so long as the element they point to
+ *  has not been replaced since it was issued. T
+ *
+ * This is useful to prevent accidental access and modification of elements that have changed by a stale index.
+ * This allows handles to be kept with a guarentee that if the element has changed it cannot be accessed by an older
+ * handle pointing to the same element. In effect weakly referencing values stored in the arena.
+ *
+ * A GenerationHandle holds two readonly numbers. The first is the index into the [[GernerationalArena]].
+ * The second is the generation of element pointed to when the handle was generated.
+ *
+ * The main point of note is that these values should not be modified after they have been handed out. Nor should
+ * users create these themselves. Nor should they pass handles from one arena into a different arena.
+ *
+ * For safety it can be a good idea to extend GenerationalHandle:
+ * ```typescript
+ * export class SpecificHandle extends GenerationHandle {
+ *      constructor (index : number, generation : number) {
+ *          super(index, generation);
+ *      }
+ * }
+ * ```
+ *
+ * And then extend GenerationalArena:
+ * ```typescript
+ * class SpecificGenerationalArena<T> extends GenerationalArena<T, SpecificHandle> {
+ *      constructor(size : number) {
+ *          super(size, SpecificHandle);
+ *      }
+ * }
+ * ```
+ *
+ * This results in an arena that can only take the SpecificHandle type as a valid handle.
+ *
+ * @packageDocumentation
+ */
+declare class GenerationHandle {
     readonly index: number;
     readonly generation: number;
+    constructor(index: number, generation: number);
 }
-declare class GenerationalArena<T> {
+declare class GenerationalArena<T, E extends GenerationHandle> {
     generation: number[];
     data: (T | undefined)[];
     freeList: number[];
-    constructor(size: number);
-    add(data: T): GenerationHandle | undefined;
-    get(handle: GenerationHandle): T | undefined;
+    handleConstructor: new (index: number, generation: number) => E;
+    constructor(size: number, handleConstructor: new (index: number, generation: number) => E);
+    add(data: T): E | undefined;
+    get(handle: E): T | undefined;
     findFirst(test: (data: T) => boolean): T | undefined;
-    remove(handle: GenerationHandle): undefined;
-    valid(handle: GenerationHandle): boolean;
+    remove(handle: E): undefined;
+    valid(handle: E): boolean;
     numFreeSlots(): number;
     numUsedSlots(): number;
 }
 
+/**
+ *  Value<T> is a part of the Result<T, E> discriminated union, it represents a valid value of T being returned.
+ *  @typeParam T The type of the value that will be contained in Value<T>.
+ */
 interface Value<T> {
     kind: "value";
     value: T;
 }
+/**
+ *  Error<T> is a part of the Result<T, E> discriminated union, it represents an error of T being returned.
+ *  @typeParam T The type of the error that will be contained in Error<T>.
+ */
 interface Error<T> {
     kind: "error";
     error: T;
 }
+/**
+ * A Result type representing a discriminated union of a successful value being returned from a function or an error.
+ *
+ * Checking for value or error:
+ * ```typescript
+ * const result = someFunctionThatReturnsResult();
+ * if (result.kind === "value") {
+ *      // can use result.value
+ * } else {
+ *      // can use result.error
+ * }
+ * ```
+ * @typeParam T The type of the value to be returned.
+ * @typeParam E The type of the error to be returned in the event that the function fails.
+ */
 declare type Result<T, E> = Value<T> | Error<E>;
+/**
+ * An Optional type representing a value that may or may not be set.
+ *
+ * Simple to check for a valid value:
+ * ```typescript
+ * if (optionalValue !== undefined) {
+ *      // do something
+ * }
+ * ```
+ *
+ * @typeParam T the type of the value if set.
+ */
 declare type Optional<T> = T | undefined;
 
+/**
+ * A set of utility functions and classes to help work around deficiencies in the Safari WebAudio implementation.
+ * @packageDocumentation
+ */
+/**
+ * Part of the [[MixdownStereoPannerNode]] discriminated union.
+ *
+ * This is for the Safari implementation using the WebAudio PannerNode.
+ */
 interface SafariNode {
     kind: "safari";
     panner: PannerNode;
 }
+/**
+ * Part of the [[MixdownStereoPannerNode]] discriminated union.
+ *
+ * This is for all non-Safari implementations using the WebAudio StereoPannerNode.
+ */
 interface StereoNode {
     kind: "stereopanner";
     stereoPanner: StereoPannerNode;
 }
+/**
+ * A discriminated union representing the different implementations of the [[MixdownStereoPanner]]
+ */
+declare type MixdownStereoPannerNode = SafariNode | StereoNode;
+/**
+ * MixdownStereoPanner is a wrapper over the cross-platform implementation details of StereoPannerNode.
+ *
+ * On Safari it represents the StereoPannerNode using the PannerNode using the 'equalpower' model.
+ * To correctly pan the sound it is moved along the x-axis between -1 and 1 from left to right.
+ * To keep the loudness equivalent for all positions as you would expect in purely stereo output the
+ *  distance is kept at 1 unit by offsetting the sound forward along the z-axis by 1 - abs(panValue).
+ *
+ * On other platforms it uses the standard StereoPannerNode.
+ *
+ * Note: On Safari this is probably not going to mix well with anything that moves
+ * the listener position around, at that point we would need to adjust all
+ * MixdownStereoPanner nodes to be offset from that position
+ */
 declare class MixdownStereoPanner {
-    _panner: SafariNode | StereoNode;
+    /**
+     * @ignore
+     * */
+    _panner: MixdownStereoPannerNode;
+    /**
+      * @ignore
+      * */
     _pan: number;
+    /**
+     *  @returns The current value of the pan property.
+     */
     get pan(): number;
+    /**
+     * @param value The value to set pan to in the underlying implementation. This is clamped in the range -1 to 1 inclusive.
+     */
     set pan(value: number);
+    /**
+     *
+     * @param context The AudioContext that [[Mixdown]] is using.
+     */
     constructor(context: AudioContext);
+    /**
+     * @returns A reference to the AudioNode being used by the underlying implementation.
+     */
     getAudioNode(): AudioNode;
 }
 
@@ -129,12 +254,14 @@ interface Stream {
     source: MediaElementAudioSourceNode;
     audio: HTMLAudioElement;
 }
-declare type VoiceGenerationHandle = {
+declare class VoiceGenerationHandle extends GenerationHandle {
     kind: "voice";
-} & GenerationHandle;
-declare type StreamGenerationHandle = {
+    constructor(index: number, generation: number);
+}
+declare class StreamGenerationHandle extends GenerationHandle {
     kind: "stream";
-} & GenerationHandle;
+    constructor(index: number, generation: number);
+}
 declare class Mixer {
     context: AudioContext;
     gainNode: GainNode;
@@ -155,8 +282,8 @@ declare class Mixdown {
     slopSize: number;
     mixerMap: Record<string, Mixer | undefined>;
     masterMixer: Mixer;
-    voices: GenerationalArena<Voice>;
-    streams: GenerationalArena<Stream>;
+    voices: GenerationalArena<Voice, VoiceGenerationHandle>;
+    streams: GenerationalArena<Stream, StreamGenerationHandle>;
     removalFadeDuration: number;
     constructor(maxSounds?: number, maxStreams?: number, slopSize?: number);
     loadAsset(name: string, path: string): Promise<boolean>;
