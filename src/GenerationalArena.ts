@@ -33,6 +33,8 @@
  * 
  * This results in an arena that can only take the SpecificHandle type as a valid handle.
  * 
+ * For convenience there exists [[SimpleGenerationalArena]] that provides this behavior for [[GenerationHandle]].
+ * 
  * @packageDocumentation
  */
 
@@ -46,14 +48,14 @@ export class GenerationHandle {
     }
 }
 
-export class GenerationalArena<T, E extends GenerationHandle> {
+export class GenerationalArena<T, H extends GenerationHandle> {
     generation : number[] = [];
     data : (T | undefined)[] = [];
     freeList : number[] = [];
 
-    handleConstructor : new(index : number, generation : number) => E;
+    handleConstructor : new(index : number, generation : number) => H;
 
-    constructor(size : number, handleConstructor : new(index : number, generation : number) => E) {
+    constructor(size : number, handleConstructor : new(index : number, generation : number) => H) {
         this.handleConstructor = handleConstructor;
 
         for (let i = 0; i < size; ++i) {
@@ -63,7 +65,7 @@ export class GenerationalArena<T, E extends GenerationHandle> {
         }
     }
 
-    add(data : T) : E | undefined {
+    add(data : T) : H | undefined {
         if (this.freeList.length === 0) {
             return undefined;
         }
@@ -73,7 +75,7 @@ export class GenerationalArena<T, E extends GenerationHandle> {
         return new this.handleConstructor(index, this.generation[index]);
     }
 
-    get(handle : E) : T | undefined {
+    get(handle : H) : T | undefined {
         if (handle.generation !== this.generation[handle.index]) {
             return undefined;
         }
@@ -97,7 +99,7 @@ export class GenerationalArena<T, E extends GenerationHandle> {
         }
     }
 
-    remove(handle : E) {
+    remove(handle : H) {
         if (handle.generation !== this.generation[handle.index]) {
             return undefined;
         }
@@ -107,7 +109,7 @@ export class GenerationalArena<T, E extends GenerationHandle> {
         this.freeList.push(index);
     }
 
-    valid(handle : E) : boolean {
+    valid(handle : H) : boolean {
         return handle.generation === this.generation[handle.index];
     }
 
