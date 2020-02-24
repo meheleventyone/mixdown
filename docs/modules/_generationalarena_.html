@@ -78,21 +78,23 @@
 					handle pointing to the same element. In effect weakly referencing values stored in the arena.</p>
 					<p>A GenerationHandle holds two readonly numbers. The first is the index into the [[GernerationalArena]].
 					The second is the generation of element pointed to when the handle was generated.</p>
-					<p>The main point of note is that these values should not be modified after they have been handed out. Nor should
-					users create these themselves. Nor should they pass handles from one arena into a different arena.</p>
+					<p>The main points of note is that these values should not be modified after they have been handed out. Nor should
+						users create these themselves. Nor should they pass handles from one arena into a different arena. Further data references
+					taken from the Arena should be treated as ephemeral and not stored elsewhere.</p>
 					<p>For safety it can be a good idea to extend GenerationalHandle:</p>
 					<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> SpecificHandle <span class="hljs-keyword">extends</span> GenerationHandle {
- <span class="hljs-keyword">constructor</span> (<span class="hljs-params">index : <span class="hljs-built_in">number</span>, generation : <span class="hljs-built_in">number</span></span>) {
-     <span class="hljs-keyword">super</span>(index, generation);
- }
+     <span class="hljs-keyword">constructor</span> (<span class="hljs-params">index : <span class="hljs-built_in">number</span>, generation : <span class="hljs-built_in">number</span></span>) {
+         <span class="hljs-keyword">super</span>(index, generation);
+     }
 }</code></pre>
 					<p>And then extend GenerationalArena:</p>
 					<pre><code class="language-typescript"><span class="hljs-keyword">class</span> SpecificGenerationalArena&lt;T&gt; <span class="hljs-keyword">extends</span> GenerationalArena&lt;T, SpecificHandle&gt; {
- <span class="hljs-keyword">constructor</span>(<span class="hljs-params">size : <span class="hljs-built_in">number</span></span>) {
-     <span class="hljs-keyword">super</span>(size, SpecificHandle);
- }
+     <span class="hljs-keyword">constructor</span>(<span class="hljs-params">size : <span class="hljs-built_in">number</span></span>) {
+         <span class="hljs-keyword">super</span>(size, SpecificHandle);
+     }
 }</code></pre>
 					<p>This results in an arena that can only take the SpecificHandle type as a valid handle.</p>
+					<p>For convenience there exists <a href="../classes/_generationalarena_.simplegenerationalarena.html">SimpleGenerationalArena</a> that provides this behavior for <a href="../classes/_generationalarena_.generationhandle.html">GenerationHandle</a>.</p>
 				</div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
