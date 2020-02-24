@@ -1,28 +1,53 @@
-/* 
-    A Web Audio based mixer for games.
-    @packageDocumentation
+/**
+ * A Web Audio based mixer for games.
+ * @packageDocumentation
  */
 
 import { GenerationHandle, GenerationalArena } from "./GenerationalArena";
 import { Result, Optional } from "./Utility";
 import { MixdownStereoPanner } from "./SafariHacks";
 
+/**
+ * The priority of the [[SoundDefinition]]. Higher priority sounds will replace lower priority sounds.
+ */
 export enum Priority {
     Low = 0,
     Medium,
     High
 }
 
+/**
+ * Metadata for sound looping. If set to play in the sound will play the part of sound before the loop start
+ *  point and then loop. If set to play out when the sound is stopped it will play the part of the sound
+ * after the loop end point before it was stopped.
+ */
 export interface SoundLoop {
     playIn : boolean;
     playOut : boolean;
 }
 
+/**
+ * Sets the start and end points in seconds to define a sound clip. SoundClip is used for loops and one shot clips.
+ */
 export interface SoundClip {
     start : number;
     end : number;
 }
 
+/**
+ * A SoundDefinition is the data definition for sound effects and other sounds that should be loaded into
+ * memory from [[AssetDefinition]]s.
+ * 
+ * Each SoundDefinition is defined as:
+ * * __name__ - A string by which the definition can later be referred.
+ * * __priority__ - A [[Priority]] for the sound.
+ * * __asset__ - The string name of an [[AssetDefinition]].
+ * * __gain__ - The default gain to be set to play this SoundDefinition.
+ * * __loop__ - A [[SoundLoop]]. An optional piece of metadata to define how looping will behave.
+ * * __clip__ - A [[SoundClip]]. An optional piece of metadata that defines start and end points for the clip or loop.
+ * * __mixer__ - The string name of an optional [[MixerDefinition]] to play this sound through. This means the sound
+ * will play through the specified [[Mixer]].
+ */
 export interface SoundDefinition {
     kind : "sound";
     name : string;

@@ -69,6 +69,25 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A SoundDefinition is the data definition for sound effects and other sounds that should be loaded into
+						memory from <a href="_mixdown_.assetdefinition.html">AssetDefinition</a>s.</p>
+					</div>
+					<p>Each SoundDefinition is defined as:</p>
+					<ul>
+						<li><strong>name</strong> - A string by which the definition can later be referred.</li>
+						<li><strong>priority</strong> - A <a href="../enums/_mixdown_.priority.html">Priority</a> for the sound.</li>
+						<li><strong>asset</strong> - The string name of an <a href="_mixdown_.assetdefinition.html">AssetDefinition</a>.</li>
+						<li><strong>gain</strong> - The default gain to be set to play this SoundDefinition.</li>
+						<li><strong>loop</strong> - A <a href="_mixdown_.soundloop.html">SoundLoop</a>. An optional piece of metadata to define how looping will behave.</li>
+						<li><strong>clip</strong> - A <a href="_mixdown_.soundclip.html">SoundClip</a>. An optional piece of metadata that defines start and end points for the clip or loop.</li>
+						<li><strong>mixer</strong> - The string name of an optional <a href="_mixdown_.mixerdefinition.html">MixerDefinition</a> to play this sound through. This means the sound
+						will play through the specified <a href="../classes/_mixdown_.mixer.html">Mixer</a>.</li>
+					</ul>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -105,7 +124,7 @@
 					<div class="tsd-signature tsd-kind-icon">asset<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L30">mixdown.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L55">mixdown.ts:55</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -115,7 +134,7 @@
 					<div class="tsd-signature tsd-kind-icon">clip<span class="tsd-signature-symbol">:</span> <a href="_mixdown_.soundclip.html" class="tsd-signature-type">SoundClip</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L33">mixdown.ts:33</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L58">mixdown.ts:58</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -125,7 +144,7 @@
 					<div class="tsd-signature tsd-kind-icon">gain<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L31">mixdown.ts:31</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L56">mixdown.ts:56</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -135,7 +154,7 @@
 					<div class="tsd-signature tsd-kind-icon">kind<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"sound"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L27">mixdown.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L52">mixdown.ts:52</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -145,7 +164,7 @@
 					<div class="tsd-signature tsd-kind-icon">loop<span class="tsd-signature-symbol">:</span> <a href="_mixdown_.soundloop.html" class="tsd-signature-type">SoundLoop</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L32">mixdown.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L57">mixdown.ts:57</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -155,7 +174,7 @@
 					<div class="tsd-signature tsd-kind-icon">mixer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L34">mixdown.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L59">mixdown.ts:59</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -165,7 +184,7 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L28">mixdown.ts:28</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L53">mixdown.ts:53</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -175,7 +194,7 @@
 					<div class="tsd-signature tsd-kind-icon">priority<span class="tsd-signature-symbol">:</span> <a href="../enums/_mixdown_.priority.html" class="tsd-signature-type">Priority</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/58ed8f4/src/mixdown.ts#L29">mixdown.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L54">mixdown.ts:54</a></li>
 						</ul>
 					</aside>
 				</section>
