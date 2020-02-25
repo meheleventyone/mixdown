@@ -69,6 +69,19 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A Mixer represents a node in a hierarchy of sounds and other Mixers. It can be parented to one Mixer
+							and can have one or more sounds and Mixers parented to it. Audio flows down through the hierarchy with each
+						Mixer effecting the resultant output.</p>
+					</div>
+					<p>Right now Mixers are pretty boring and allow only manipulation of gain. But this is enough to do some interesting
+						segregation of sounds to allow things like adjustable gain for categories like music, sfx, dialogue and ui. They can
+					also be used to automate things like ducking of sounds for example to add emphasis to one particular sound effect.</p>
+					<p>In the future I hope to expand them further to do more interesting things and open them for extension by users.</p>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -121,7 +134,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L294">mixdown.ts:294</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L424">mixdown.ts:424</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -149,7 +162,7 @@
 					<div class="tsd-signature tsd-kind-icon">context<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AudioContext</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L291">mixdown.ts:291</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L421">mixdown.ts:421</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -159,7 +172,7 @@
 					<div class="tsd-signature tsd-kind-icon">gain<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">GainNode</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L292">mixdown.ts:292</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L422">mixdown.ts:422</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -169,7 +182,7 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L294">mixdown.ts:294</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L424">mixdown.ts:424</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -179,7 +192,7 @@
 					<div class="tsd-signature tsd-kind-icon">parent<span class="tsd-signature-symbol">:</span> <a href="_mixdown_.mixer.html" class="tsd-signature-type">Mixer</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L293">mixdown.ts:293</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L423">mixdown.ts:423</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -196,7 +209,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L305">mixdown.ts:305</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L435">mixdown.ts:435</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -219,7 +232,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L314">mixdown.ts:314</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L444">mixdown.ts:444</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -236,7 +249,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L330">mixdown.ts:330</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L460">mixdown.ts:460</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -259,7 +272,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L322">mixdown.ts:322</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L452">mixdown.ts:452</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -285,7 +298,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L318">mixdown.ts:318</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L448">mixdown.ts:448</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>

@@ -69,6 +69,22 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A StreamDefinition defines sounds that should be streamed rather than loaded into memory. This trades some immediecy
+						of playback for lower memory overhead and is most useful for playing music and other long running sounds.</p>
+					</div>
+					<p>Each StreamDefinition contains:</p>
+					<ul>
+						<li><strong>name</strong> - A string by which the definition can later be referred.</li>
+						<li><strong>source</strong> - The source URL from which the streaming audio will be played.</li>
+						<li><strong>gain</strong> - The starting gain for the audio.</li>
+						<li><strong>mixer</strong> - The string name of an optional <a href="_mixdown_.mixerdefinition.html">MixerDefinition</a> to play this sound through. This means the sound will
+						be piped through the specified <a href="../classes/_mixdown_.mixer.html">Mixer</a>.</li>
+					</ul>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -102,7 +118,7 @@
 					<div class="tsd-signature tsd-kind-icon">gain<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L66">mixdown.ts:66</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L77">mixdown.ts:77</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -112,7 +128,7 @@
 					<div class="tsd-signature tsd-kind-icon">kind<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"stream"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L63">mixdown.ts:63</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L74">mixdown.ts:74</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -122,7 +138,7 @@
 					<div class="tsd-signature tsd-kind-icon">mixer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L67">mixdown.ts:67</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L78">mixdown.ts:78</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -132,7 +148,7 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L64">mixdown.ts:64</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L75">mixdown.ts:75</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -142,7 +158,7 @@
 					<div class="tsd-signature tsd-kind-icon">source<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L65">mixdown.ts:65</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L76">mixdown.ts:76</a></li>
 						</ul>
 					</aside>
 				</section>

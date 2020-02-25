@@ -339,17 +339,29 @@ export class BankBuilder {
     }
 }
 
+/**
+ * The union of [[Definable]]s that can be played directly.
+ */
 export type Playable = SoundDefinition | StreamDefinition;
 
+/** 
+ * Error enum for [[Mixdown]] failing to load a [[Bank]].
+*/
 export enum LoadBankError {
     BANK_VALIDATION_FAIL,
 }
 
+/** 
+ * Result enum for many [[Mixdown]] operations that utilise handles.
+*/
 export enum OperationResult {
     SUCCESS = 0,
     DOES_NOT_EXIST,
 }
 
+/**
+ * A type representing a playing [[SoundDefinition]].
+ */
 interface Voice {
     gain : GainNode;
     balance : MixdownStereoPanner;
@@ -358,6 +370,9 @@ interface Voice {
     playOut : boolean;
 }
 
+/**
+ * A type representing a playing [[StreamDefinition]].
+ */
 interface Stream {
     gain: GainNode;
     balance: MixdownStereoPanner;
@@ -365,6 +380,9 @@ interface Stream {
     audio: HTMLAudioElement;
 }
 
+/**
+ * A handle representing a playing [[SoundDefinition]].
+ */
 export class VoiceGenerationHandle extends GenerationHandle {
     kind : "voice";
 
@@ -375,6 +393,9 @@ export class VoiceGenerationHandle extends GenerationHandle {
     }
 }
 
+/**
+ * A handle representing a playing [[StreamDefinition]].
+ */
 export class StreamGenerationHandle extends GenerationHandle {
     kind : "stream";
 
@@ -385,6 +406,17 @@ export class StreamGenerationHandle extends GenerationHandle {
     }
 }
 
+/**
+ * A Mixer represents a node in a hierarchy of sounds and other Mixers. It can be parented to one Mixer
+ * and can have one or more sounds and Mixers parented to it. Audio flows down through the hierarchy with each
+ * Mixer effecting the resultant output.
+ * 
+ * Right now Mixers are pretty boring and allow only manipulation of gain. But this is enough to do some interesting
+ * segregation of sounds to allow things like adjustable gain for categories like music, sfx, dialogue and ui. They can
+ * also be used to automate things like ducking of sounds for example to add emphasis to one particular sound effect.
+ * 
+ * In the future I hope to expand them further to do more interesting things and open them for extension by users.
+ */
 export class Mixer {
     context : AudioContext;
     gainNode : GainNode;

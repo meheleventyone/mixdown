@@ -69,6 +69,14 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A Bank contains a collection of <a href="../modules/_mixdown_.html#definable">Definable</a> items that constitute a set of sounds and mixers that belong together.</p>
+					</div>
+					<p>Typically you don&#39;t want to create one yourself but rather use the <a href="_mixdown_.bankbuilder.html">BankBuilder</a>.</p>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -111,7 +119,7 @@
 					<div class="tsd-signature tsd-kind-icon">assets<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_mixdown_.assetdefinition.html" class="tsd-signature-type">AssetDefinition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L87">mixdown.ts:87</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L121">mixdown.ts:121</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -121,7 +129,7 @@
 					<div class="tsd-signature tsd-kind-icon">mixers<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_mixdown_.mixerdefinition.html" class="tsd-signature-type">MixerDefinition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L90">mixdown.ts:90</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L124">mixdown.ts:124</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -131,7 +139,7 @@
 					<div class="tsd-signature tsd-kind-icon">sounds<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_mixdown_.sounddefinition.html" class="tsd-signature-type">SoundDefinition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L88">mixdown.ts:88</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L122">mixdown.ts:122</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -141,7 +149,7 @@
 					<div class="tsd-signature tsd-kind-icon">streams<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_mixdown_.streamdefinition.html" class="tsd-signature-type">StreamDefinition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L89">mixdown.ts:89</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L123">mixdown.ts:123</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -158,16 +166,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L92">mixdown.ts:92</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L131">mixdown.ts:131</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Finds a <a href="../modules/_mixdown_.html#definable">Definable</a> by name if you know the type of the item it&#39;s faster to use the specific accessor.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the <a href="../modules/_mixdown_.html#definable">Definable</a> to find.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../modules/_mixdown_.html#definable" class="tsd-signature-type">Definable</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+							<p>The <a href="../modules/_mixdown_.html#definable">Definable</a> or undefined if the name does not exist in the bank.</p>
 						</li>
 					</ul>
 				</section>
@@ -181,16 +198,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L99">mixdown.ts:99</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L143">mixdown.ts:143</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Finds an <a href="../interfaces/_mixdown_.assetdefinition.html">AssetDefinition</a> by name.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the definition to find.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_mixdown_.assetdefinition.html" class="tsd-signature-type">AssetDefinition</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+							<p>The <a href="../interfaces/_mixdown_.assetdefinition.html">AssetDefinition</a> or undefined if the name does not exist in the bank.</p>
 						</li>
 					</ul>
 				</section>
@@ -204,16 +230,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L111">mixdown.ts:111</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L170">mixdown.ts:170</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Finds a <a href="../interfaces/_mixdown_.mixerdefinition.html">MixerDefinition</a> by name.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the definition to find.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_mixdown_.mixerdefinition.html" class="tsd-signature-type">MixerDefinition</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+							<p>The <a href="../interfaces/_mixdown_.mixerdefinition.html">MixerDefinition</a> or undefined if the name does not exist in the bank.</p>
 						</li>
 					</ul>
 				</section>
@@ -227,16 +262,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L103">mixdown.ts:103</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L152">mixdown.ts:152</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Finds a <a href="../interfaces/_mixdown_.sounddefinition.html">SoundDefinition</a> by name.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the definition to find.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_mixdown_.sounddefinition.html" class="tsd-signature-type">SoundDefinition</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+							<p>The <a href="../interfaces/_mixdown_.sounddefinition.html">SoundDefinition</a> or undefined if the name does not exist in the bank.</p>
 						</li>
 					</ul>
 				</section>
@@ -250,16 +294,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L107">mixdown.ts:107</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L161">mixdown.ts:161</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Finds a <a href="../interfaces/_mixdown_.streamdefinition.html">StreamDefinition</a> by name.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the definition to find.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_mixdown_.streamdefinition.html" class="tsd-signature-type">StreamDefinition</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+							<p>The <a href="../interfaces/_mixdown_.streamdefinition.html">StreamDefinition</a> or undefined if the name does not exist in the bank.</p>
 						</li>
 					</ul>
 				</section>

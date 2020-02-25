@@ -69,6 +69,13 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The BankBuilder is used to create a <a href="_mixdown_.bank.html">Bank</a> in a declarative manner.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -102,7 +109,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_mixdown_.bankbuilder.html#createsounddefinition" class="tsd-kind-icon">create<wbr>Sound<wbr>Definition</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_mixdown_.bankbuilder.html#createstreamdefinition" class="tsd-kind-icon">create<wbr>Stream<wbr>Definition</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_mixdown_.bankbuilder.html#getbank" class="tsd-kind-icon">get<wbr>Bank</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_mixdown_.bankbuilder.html#validate" class="tsd-kind-icon">validate</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_mixdown_.bankbuilder.html#validate" class="tsd-kind-icon">validate</a></li>
 							</ul>
 						</section>
 					</div>
@@ -120,7 +127,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L117">mixdown.ts:117</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L180">mixdown.ts:180</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="_mixdown_.bankbuilder.html" class="tsd-signature-type">BankBuilder</a></h4>
@@ -136,9 +143,14 @@
 					<div class="tsd-signature tsd-kind-icon">bank<span class="tsd-signature-symbol">:</span> <a href="_mixdown_.bank.html" class="tsd-signature-type">Bank</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L117">mixdown.ts:117</a></li>
+							<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L180">mixdown.ts:180</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The Bank to be manipulated.</p>
+						</div>
+					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -153,13 +165,21 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L136">mixdown.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L203">mixdown.ts:203</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Add&#39;s a <a href="../modules/_mixdown_.html#definable">Definable</a> to the <a href="_mixdown_.bank.html">Bank</a>.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>definition: <a href="../modules/_mixdown_.html#definable" class="tsd-signature-type">Definable</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The <a href="../modules/_mixdown_.html#definable">Definable</a> to add.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -176,16 +196,27 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L146">mixdown.ts:146</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L218">mixdown.ts:218</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates an <a href="../interfaces/_mixdown_.assetdefinition.html">AssetDefinition</a> and adds it to the <a href="_mixdown_.bank.html">Bank</a>.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A string by which the <a href="../interfaces/_mixdown_.assetdefinition.html">AssetDefinition</a> can later be referred.</p>
+									</div>
 								</li>
 								<li>
 									<h5>source: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A URL from which the asset will be loaded.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -202,19 +233,33 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L176">mixdown.ts:176</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L271">mixdown.ts:271</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a <a href="../interfaces/_mixdown_.mixerdefinition.html">MixerDefinition</a> and adds it to the <a href="_mixdown_.bank.html">Bank</a>.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A string by which this <a href="../interfaces/_mixdown_.mixerdefinition.html">MixerDefinition</a> may later be referred.</p>
+									</div>
 								</li>
 								<li>
 									<h5>gain: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The starting gain value for the <a href="_mixdown_.mixer.html">Mixer</a>.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> parent: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional name of the parent Mixer for this instance.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -231,31 +276,57 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L151">mixdown.ts:151</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L233">mixdown.ts:233</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a <a href="../interfaces/_mixdown_.sounddefinition.html">SoundDefinition</a> and adds it to the <a href="_mixdown_.bank.html">Bank</a>.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A string by which the <a href="../interfaces/_mixdown_.sounddefinition.html">SoundDefinition</a> can later be referred.</p>
+									</div>
 								</li>
 								<li>
 									<h5>priority: <a href="../enums/_mixdown_.priority.html" class="tsd-signature-type">Priority</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="../enums/_mixdown_.priority.html">Priority</a> for the sound.</p>
+									</div>
 								</li>
 								<li>
 									<h5>asset: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the <a href="../interfaces/_mixdown_.assetdefinition.html">AssetDefinition</a> that is used by this sound.</p>
+									</div>
 								</li>
 								<li>
 									<h5>gain: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The starting gain of this sound.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> loop: <a href="../interfaces/_mixdown_.soundloop.html" class="tsd-signature-type">SoundLoop</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional <a href="../interfaces/_mixdown_.soundloop.html">SoundLoop</a> metadata.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> clip: <a href="../interfaces/_mixdown_.soundclip.html" class="tsd-signature-type">SoundClip</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional <a href="../interfaces/_mixdown_.soundclip.html">SoundClip</a> metadata.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> mixer: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional name of a <a href="_mixdown_.mixer.html">Mixer</a> this sound should play through.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -272,22 +343,39 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L165">mixdown.ts:165</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L254">mixdown.ts:254</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a <a href="../interfaces/_mixdown_.streamdefinition.html">StreamDefinition</a> and adds it to the <a href="_mixdown_.bank.html">Bank</a></p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A string by which this <a href="../interfaces/_mixdown_.streamdefinition.html">StreamDefinition</a> may later be referred.</p>
+									</div>
 								</li>
 								<li>
 									<h5>source: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The URL the sound will be streamed from.</p>
+									</div>
 								</li>
 								<li>
 									<h5>gain: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The starting gain value.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> mixer: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional name of the <a href="_mixdown_.mixer.html">Mixer</a> this sound will be played through.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -304,7 +392,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L123">mixdown.ts:123</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L186">mixdown.ts:186</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -317,19 +405,30 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
 					<a name="validate" class="tsd-anchor"></a>
-					<h3>validate</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">validate<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> validate</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">validate<span class="tsd-signature-symbol">(</span>bank<span class="tsd-signature-symbol">: </span><a href="_mixdown_.bank.html" class="tsd-signature-type">Bank</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/7180054/src/mixdown.ts#L186">mixdown.ts:186</a></li>
+									<li>Defined in <a href="https://github.com/meheleventyone/mixdown/blob/9097ac1/src/mixdown.ts#L284">mixdown.ts:284</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This function allows the user to make sure a <a href="_mixdown_.bank.html">Bank</a> meets the requirements of <a href="_mixdown_.mixdown.html">Mixdown</a>.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>bank: <a href="_mixdown_.bank.html" class="tsd-signature-type">Bank</a></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
@@ -399,7 +498,7 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="_mixdown_.bankbuilder.html#getbank" class="tsd-kind-icon">get<wbr>Bank</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
 								<a href="_mixdown_.bankbuilder.html#validate" class="tsd-kind-icon">validate</a>
 							</li>
 						</ul>
