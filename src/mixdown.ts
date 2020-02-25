@@ -35,8 +35,8 @@ export interface SoundClip {
 }
 
 /**
- * A SoundDefinition is the data definition for sound effects and other sounds that should be loaded into
- * memory from [[AssetDefinition]]s.
+ * A SoundDefinition is the definition for sounds that should be played from assets loaded
+ * into memory from [[AssetDefinition]]s.
  * 
  * Each SoundDefinition is defined as:
  * * __name__ - A string by which the definition can later be referred.
@@ -59,6 +59,17 @@ export interface SoundDefinition {
     mixer? : string;
 }
 
+/**
+ * A StreamDefinition defines sounds that should be streamed rather than loaded into memory. This trades some immediecy
+ * of playback for lower memory overhead and is most useful for playing music and other long running sounds.
+ * 
+ * Each StreamDefinition contains:
+ * * __name__ - A string by which the definition can later be referred.
+ * * __source__ - The source URL from which the streaming audio will be played.
+ * * __gain__ - The starting gain for the audio.
+ * * __mixer__ - The string name of an optional [[MixerDefinition]] to play this sound through. This means the sound will
+ * be piped through the specified [[Mixer]].
+ */
 export interface StreamDefinition {
     kind : "stream";
     name : string;
@@ -67,6 +78,15 @@ export interface StreamDefinition {
     mixer? : string;
 }
 
+/**
+ * A MixerDefinition defines a [[Mixer]] which is a node based means of manipulating sounds as groups. Multiple Mixers and
+ * sounds can be piped through a Mixer which in turn can pipe itself to another Mixer.
+ * 
+ * Each MixerDefinition contains:
+ * * __name__ - A string by which the [[Mixer]] can later be referred.
+ * * __gain__ - The starting gain of the Mixer.
+ * * __parent__ - An optional string name of the [[Mixer]] to which this definition should be parented.
+ */
 export interface MixerDefinition {
     kind : "mixer";
     name : string;
@@ -74,21 +94,40 @@ export interface MixerDefinition {
     parent? : string;
 }
 
+/**
+ * An AssetDefinition defines an asset that will be loaded into memory.
+ * 
+ * Each AssetDefinition contains:
+ * * __name__ - A string by which the AssetDefinition can later be referred.
+ * * __source__ - A URL to the asset to be loaded.
+ */
 export interface AssetDefinition {
     kind : "asset";
     name : string;
     source : string;
 }
 
+/**
+ * A Definable is the union of the different definition types.
+ */
 type Definable = AssetDefinition | SoundDefinition | StreamDefinition | MixerDefinition;
 
-// todo: can this be purely internal, I think so but lets see
+/**
+ * A Bank contains a collection of [[Definable]] items that constitute a set of sounds and mixers that belong together.
+ * 
+ * Typically you don't want to create one yourself but rather use the [[BankBuilder]].
+ */
 export class Bank {
     assets : AssetDefinition[] = [];
     sounds : SoundDefinition[] = [];
     streams  : StreamDefinition[] = [];
     mixers : MixerDefinition[] = [];
 
+    /**
+     * Finds a [[Definable]] by name if you know the type of the item it's faster to use the specific accessor.
+     * @param name The name of the [[Definable]] to find.
+     * @returns The [[Definable]] or undefined if the name does not exist in the bank.
+     */
     get(name : string) : Definable | undefined {
         return this.getAssetDefinition(name) ?? 
                this.getSoundDefinition(name) ?? 
@@ -96,24 +135,48 @@ export class Bank {
                this.getMixerDefinition(name) ?? undefined;
     }
 
+    /**
+     * Finds an [[AssetDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[AssetDefinition]] or undefined if the name does not exist in the bank.
+     */
     getAssetDefinition (name : string) : AssetDefinition | undefined {
         return this.assets.find((item) => item.name === name);
     }
 
+    /**
+     * Finds a [[SoundDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[SoundDefinition]] or undefined if the name does not exist in the bank.
+     */
     getSoundDefinition (name : string) : SoundDefinition | undefined {
         return this.sounds.find((item) => item.name === name);
     }
 
+    /**
+     * Finds a [[StreamDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[StreamDefinition]] or undefined if the name does not exist in the bank.
+     */
     getStreamDefinition (name : string) : StreamDefinition | undefined {
         return this.streams.find((item) => item.name === name);
     }
 
+    /**
+     * Finds a [[MixerDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[MixerDefinition]] or undefined if the name does not exist in the bank.
+     */
     getMixerDefinition (name : string) : MixerDefinition | undefined {
         return this.mixers.find((item) => item.name === name);
     }
 }
 
+/**
+ * The BankBuilder is used to create a [[Bank]] in a declarative manner.
+ */
 export class BankBuilder {
+    /** The Bank to be manipulated. */
     bank : Bank;
 
     constructor () {
@@ -133,6 +196,10 @@ export class BankBuilder {
         }
     }
 
+    /**
+     * Add's a [[Definable]] to the [[Bank]].
+     * @param definition The [[Definable]] to add.
+     */
     add(definition : Definable) {
         const definitionStore = this.getBank(definition);
         const index = definitionStore?.findIndex((item) => item.name === definition.name);
@@ -143,11 +210,26 @@ export class BankBuilder {
         definitionStore?.push(definition);
     }
 
+    /**
+     * Creates an [[AssetDefinition]] and adds it to the [[Bank]].
+     * @param name A string by which the [[AssetDefinition]] can later be referred.
+     * @param source A URL from which the asset will be loaded.
+     */
     createAssetDefinition (name : string, source : string) {
         const asset : AssetDefinition = {kind: "asset", name: name, source: source};
         this.add(asset);
     }
 
+    /**
+     * Creates a [[SoundDefinition]] and adds it to the [[Bank]].
+     * @param name A string by which the [[SoundDefinition]] can later be referred.
+     * @param priority A [[Priority]] for the sound.
+     * @param asset The name of the [[AssetDefinition]] that is used by this sound.
+     * @param gain The starting gain of this sound.
+     * @param loop Optional [[SoundLoop]] metadata.
+     * @param clip Optional [[SoundClip]] metadata.
+     * @param mixer Optional name of a [[Mixer]] this sound should play through.
+     */
     createSoundDefinition (name : string, priority : Priority, asset : string, gain : number, loop? : SoundLoop, clip? : SoundClip, mixer? : string) {
         const sound : SoundDefinition = {
             kind: "sound",
@@ -162,6 +244,13 @@ export class BankBuilder {
         this.add(sound);
     }
 
+    /**
+     * Creates a [[StreamDefinition]] and adds it to the [[Bank]]
+     * @param name A string by which this [[StreamDefinition]] may later be referred.
+     * @param source The URL the sound will be streamed from.
+     * @param gain The starting gain value.
+     * @param mixer Optional name of the [[Mixer]] this sound will be played through.
+     */
     createStreamDefinition (name : string, source : string, gain : number, mixer? : string) {
         const stream : StreamDefinition = {
             kind : "stream",
@@ -173,6 +262,12 @@ export class BankBuilder {
         this.add(stream);
     }
 
+    /**
+     * Creates a [[MixerDefinition]] and adds it to the [[Bank]].
+     * @param name A string by which this [[MixerDefinition]] may later be referred.
+     * @param gain The starting gain value for the [[Mixer]].
+     * @param parent Optional name of the parent Mixer for this instance.
+     */
     createMixerDefinition (name : string, gain : number, parent? : string) {
         const mixer : MixerDefinition = {
             kind : "mixer",
@@ -183,14 +278,17 @@ export class BankBuilder {
         this.add(mixer);
     }
 
-    validate () : boolean {
+    /**
+     * This function allows the user to make sure a [[Bank]] meets the requirements of [[Mixdown]].
+     */
+    static validate (bank : Bank) : boolean {
         let valid = true;
 
         // check all sounds reference valid asset names
         // and valid mixers
-        for (let i = 0; i < this.bank.sounds.length; ++i) {
-            const soundDef = this.bank.sounds[i];
-            const assetDef = this.bank.getAssetDefinition(soundDef.asset);
+        for (let i = 0; i < bank.sounds.length; ++i) {
+            const soundDef = bank.sounds[i];
+            const assetDef = bank.getAssetDefinition(soundDef.asset);
             if (!assetDef) {
                 console.warn("Bank Validation Issue: Sound %s references missing Asset %s", soundDef.name, soundDef.asset);
                 valid = false;
@@ -200,7 +298,7 @@ export class BankBuilder {
                 break;
             }
 
-            const mixerDef = this.bank.getMixerDefinition(soundDef.mixer);
+            const mixerDef = bank.getMixerDefinition(soundDef.mixer);
             if (!mixerDef) {
                 console.warn("Bank Validation Issue: Sound %s references missing Mixer %s", soundDef.name, soundDef.mixer);
                 valid = false;                
@@ -208,14 +306,14 @@ export class BankBuilder {
         }
 
         // check mixers are valid
-        for (let i = 0; i < this.bank.streams.length; ++i) {
-            const streamDef = this.bank.streams[i];
+        for (let i = 0; i < bank.streams.length; ++i) {
+            const streamDef = bank.streams[i];
 
             if (!streamDef.mixer) {
                 break;
             }
 
-            const mixerDef = this.bank.getMixerDefinition(streamDef.mixer);
+            const mixerDef = bank.getMixerDefinition(streamDef.mixer);
             if (!mixerDef) {
                 console.warn("Bank Validation Issue: Stream %s references missing Mixer %s", streamDef.name, streamDef.mixer);
                 valid = false;                
@@ -223,14 +321,14 @@ export class BankBuilder {
         }
 
         // check parents are valid
-        for (let i = 0; i < this.bank.mixers.length; ++i) {
-            const mixerDef = this.bank.mixers[i];
+        for (let i = 0; i < bank.mixers.length; ++i) {
+            const mixerDef = bank.mixers[i];
 
             if (!mixerDef.parent) {
                 continue;
             }
 
-            const parentDef = this.bank.getMixerDefinition(mixerDef.parent);
+            const parentDef = bank.getMixerDefinition(mixerDef.parent);
             if (!parentDef) {
                 console.warn("Bank Validation Issue: Mixer %s references missing parent Mixer %s", mixerDef.name, mixerDef.parent);
                 valid = false;                
@@ -412,14 +510,14 @@ export class Mixdown {
         this.bank = undefined;
     }
 
-    loadBank (builder : BankBuilder) : Result<Promise<boolean[]>, LoadBankError> {
+    loadBank (bank : Bank) : Result<Promise<boolean[]>, LoadBankError> {
         this.unloadBank();
 
-        if (!builder.validate()) {
+        if (!BankBuilder.validate(bank)) {
             return {kind: "error", error: LoadBankError.BANK_VALIDATION_FAIL};
         }
 
-        this.bank = builder.bank;
+        this.bank = bank;
 
         // first pass instantiate all the mixers
         for (let i = 0; i < this.bank.mixers.length; ++i) {

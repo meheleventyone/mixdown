@@ -1,7 +1,7 @@
 /**
  * A [[GenerationalArena]] is a fixed size pool of values of type T. Access is controlled via
  * [[GenerationHandle|Generation Handles]]. These are valid so long as the element they point to
- *  has not been replaced since it was issued. T
+ *  has not been replaced since it was issued.
  *
  * This is useful to prevent accidental access and modification of elements that have changed by a stale index.
  * This allows handles to be kept with a guarentee that if the element has changed it cannot be accessed by an older
@@ -10,8 +10,9 @@
  * A GenerationHandle holds two readonly numbers. The first is the index into the [[GernerationalArena]].
  * The second is the generation of element pointed to when the handle was generated.
  *
- * The main point of note is that these values should not be modified after they have been handed out. Nor should
- * users create these themselves. Nor should they pass handles from one arena into a different arena.
+ * The main points of note is that these values should not be modified after they have been handed out. Nor should
+ * users create these themselves. Nor should they pass handles from one arena into a different arena. Further data references
+ * taken from the Arena should be treated as ephemeral and not stored elsewhere.
  *
  * For safety it can be a good idea to extend GenerationalHandle:
  * ```typescript
@@ -33,7 +34,13 @@
  *
  * This results in an arena that can only take the SpecificHandle type as a valid handle.
  *
+ * For convenience there exists [[SimpleGenerationalArena]] that provides this behavior for [[GenerationHandle]].
+ *
  * @packageDocumentation
+ */
+/**
+ * GenerationalHandle stores readonly values representing an index into the [[GenerationalArena]] and the generation
+ * that it is valid for.
  */
 class GenerationHandle {
     constructor(index, generation) {
@@ -41,7 +48,19 @@ class GenerationHandle {
         this.generation = generation;
     }
 }
+/**
+ * GenerationalArena stores a number of items of type T that can be accessed through a handle of type H.
+ *
+ * Access via handles is policed such that handles to removed values are considered invalid.
+ *
+ * Data accessed via a handle should not be retained and should be treated as ephemeral.
+ */
 class GenerationalArena {
+    /**
+     * Constructs a GenerationalArena.
+     * @param size The number of items contained in the arena.
+     * @param handleConstructor The constructor function for the handle (e.g. if H if GenerationalArena then pass in GenerationalArena).
+     */
     constructor(size, handleConstructor) {
         this.generation = [];
         this.data = [];
@@ -53,6 +72,11 @@ class GenerationalArena {
             this.freeList.push(i);
         }
     }
+    /**
+     * Adds an item of type T to the arena.
+     * @param data The data to add.
+     * @returns A handle of type H if the operation was successful or undefined if it failed.
+     */
     add(data) {
         if (this.freeList.length === 0) {
             return undefined;
@@ -61,6 +85,12 @@ class GenerationalArena {
         this.data[index] = data;
         return new this.handleConstructor(index, this.generation[index]);
     }
+    /**
+     * Returns the data represented by the handle passed in. This should not be retained and treated
+     * as ephemeral.
+     * @param handle The handle to retrieve data for.
+     * @returns Either the data or undefined if the handle is now invalid.
+     */
     get(handle) {
         if (handle.generation !== this.generation[handle.index]) {
             return undefined;
@@ -68,6 +98,11 @@ class GenerationalArena {
         let index = handle.index;
         return this.data[index];
     }
+    /**
+     * Returns the first piece of data that meets the criteria specified by test.
+     * @param test The function to test against.
+     * @returns The data found or undefined. TODO: This should return a handle.
+     */
     findFirst(test) {
         for (let i = 0; i < this.data.length; ++i) {
             let data = this.data[i];
@@ -80,6 +115,10 @@ class GenerationalArena {
             return data;
         }
     }
+    /**
+     * Removes the data pointed to by handle.
+     * @param handle The handle to remove.
+     */
     remove(handle) {
         if (handle.generation !== this.generation[handle.index]) {
             return undefined;
@@ -89,12 +128,23 @@ class GenerationalArena {
         this.data[index] = undefined;
         this.freeList.push(index);
     }
+    /**
+     * Tests a handle to see if it is still valid.
+     * @param handle The handle to test.
+     * @returns True if valid, false otherwise.
+     */
     valid(handle) {
         return handle.generation === this.generation[handle.index];
     }
+    /**
+     * @returns The number of free slots remaining.
+     */
     numFreeSlots() {
         return this.freeList.length;
     }
+    /**
+     * @returns The number of slots used.
+     */
     numUsedSlots() {
         return this.data.length - this.freeList.length;
     }
@@ -179,9 +229,12 @@ class MixdownStereoPanner {
     }
 }
 
-/*
-    A Web Audio based mixer for games.
-    @packageDocumentation
+/**
+ * A Web Audio based mixer for games.
+ * @packageDocumentation
+ */
+/**
+ * The priority of the [[SoundDefinition]]. Higher priority sounds will replace lower priority sounds.
  */
 var Priority;
 (function (Priority) {
@@ -189,7 +242,11 @@ var Priority;
     Priority[Priority["Medium"] = 1] = "Medium";
     Priority[Priority["High"] = 2] = "High";
 })(Priority || (Priority = {}));
-// todo: can this be purely internal, I think so but lets see
+/**
+ * A Bank contains a collection of [[Definable]] items that constitute a set of sounds and mixers that belong together.
+ *
+ * Typically you don't want to create one yourself but rather use the [[BankBuilder]].
+ */
 class Bank {
     constructor() {
         this.assets = [];
@@ -197,23 +254,51 @@ class Bank {
         this.streams = [];
         this.mixers = [];
     }
+    /**
+     * Finds a [[Definable]] by name if you know the type of the item it's faster to use the specific accessor.
+     * @param name The name of the [[Definable]] to find.
+     * @returns The [[Definable]] or undefined if the name does not exist in the bank.
+     */
     get(name) {
         var _a, _b, _c, _d;
         return _d = (_c = (_b = (_a = this.getAssetDefinition(name), (_a !== null && _a !== void 0 ? _a : this.getSoundDefinition(name))), (_b !== null && _b !== void 0 ? _b : this.getStreamDefinition(name))), (_c !== null && _c !== void 0 ? _c : this.getMixerDefinition(name))), (_d !== null && _d !== void 0 ? _d : undefined);
     }
+    /**
+     * Finds an [[AssetDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[AssetDefinition]] or undefined if the name does not exist in the bank.
+     */
     getAssetDefinition(name) {
         return this.assets.find((item) => item.name === name);
     }
+    /**
+     * Finds a [[SoundDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[SoundDefinition]] or undefined if the name does not exist in the bank.
+     */
     getSoundDefinition(name) {
         return this.sounds.find((item) => item.name === name);
     }
+    /**
+     * Finds a [[StreamDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[StreamDefinition]] or undefined if the name does not exist in the bank.
+     */
     getStreamDefinition(name) {
         return this.streams.find((item) => item.name === name);
     }
+    /**
+     * Finds a [[MixerDefinition]] by name.
+     * @param name The name of the definition to find.
+     * @returns The [[MixerDefinition]] or undefined if the name does not exist in the bank.
+     */
     getMixerDefinition(name) {
         return this.mixers.find((item) => item.name === name);
     }
 }
+/**
+ * The BankBuilder is used to create a [[Bank]] in a declarative manner.
+ */
 class BankBuilder {
     constructor() {
         this.bank = new Bank();
@@ -230,6 +315,10 @@ class BankBuilder {
                 return this.bank.sounds;
         }
     }
+    /**
+     * Add's a [[Definable]] to the [[Bank]].
+     * @param definition The [[Definable]] to add.
+     */
     add(definition) {
         var _a, _b;
         const definitionStore = this.getBank(definition);
@@ -240,10 +329,25 @@ class BankBuilder {
         }
         (_b = definitionStore) === null || _b === void 0 ? void 0 : _b.push(definition);
     }
+    /**
+     * Creates an [[AssetDefinition]] and adds it to the [[Bank]].
+     * @param name A string by which the [[AssetDefinition]] can later be referred.
+     * @param source A URL from which the asset will be loaded.
+     */
     createAssetDefinition(name, source) {
         const asset = { kind: "asset", name: name, source: source };
         this.add(asset);
     }
+    /**
+     * Creates a [[SoundDefinition]] and adds it to the [[Bank]].
+     * @param name A string by which the [[SoundDefinition]] can later be referred.
+     * @param priority A [[Priority]] for the sound.
+     * @param asset The name of the [[AssetDefinition]] that is used by this sound.
+     * @param gain The starting gain of this sound.
+     * @param loop Optional [[SoundLoop]] metadata.
+     * @param clip Optional [[SoundClip]] metadata.
+     * @param mixer Optional name of a [[Mixer]] this sound should play through.
+     */
     createSoundDefinition(name, priority, asset, gain, loop, clip, mixer) {
         const sound = {
             kind: "sound",
@@ -257,6 +361,13 @@ class BankBuilder {
         };
         this.add(sound);
     }
+    /**
+     * Creates a [[StreamDefinition]] and adds it to the [[Bank]]
+     * @param name A string by which this [[StreamDefinition]] may later be referred.
+     * @param source The URL the sound will be streamed from.
+     * @param gain The starting gain value.
+     * @param mixer Optional name of the [[Mixer]] this sound will be played through.
+     */
     createStreamDefinition(name, source, gain, mixer) {
         const stream = {
             kind: "stream",
@@ -267,6 +378,12 @@ class BankBuilder {
         };
         this.add(stream);
     }
+    /**
+     * Creates a [[MixerDefinition]] and adds it to the [[Bank]].
+     * @param name A string by which this [[MixerDefinition]] may later be referred.
+     * @param gain The starting gain value for the [[Mixer]].
+     * @param parent Optional name of the parent Mixer for this instance.
+     */
     createMixerDefinition(name, gain, parent) {
         const mixer = {
             kind: "mixer",
@@ -276,13 +393,16 @@ class BankBuilder {
         };
         this.add(mixer);
     }
-    validate() {
+    /**
+     * This function allows the user to make sure a [[Bank]] meets the requirements of [[Mixdown]].
+     */
+    static validate(bank) {
         let valid = true;
         // check all sounds reference valid asset names
         // and valid mixers
-        for (let i = 0; i < this.bank.sounds.length; ++i) {
-            const soundDef = this.bank.sounds[i];
-            const assetDef = this.bank.getAssetDefinition(soundDef.asset);
+        for (let i = 0; i < bank.sounds.length; ++i) {
+            const soundDef = bank.sounds[i];
+            const assetDef = bank.getAssetDefinition(soundDef.asset);
             if (!assetDef) {
                 console.warn("Bank Validation Issue: Sound %s references missing Asset %s", soundDef.name, soundDef.asset);
                 valid = false;
@@ -290,31 +410,31 @@ class BankBuilder {
             if (!soundDef.mixer) {
                 break;
             }
-            const mixerDef = this.bank.getMixerDefinition(soundDef.mixer);
+            const mixerDef = bank.getMixerDefinition(soundDef.mixer);
             if (!mixerDef) {
                 console.warn("Bank Validation Issue: Sound %s references missing Mixer %s", soundDef.name, soundDef.mixer);
                 valid = false;
             }
         }
         // check mixers are valid
-        for (let i = 0; i < this.bank.streams.length; ++i) {
-            const streamDef = this.bank.streams[i];
+        for (let i = 0; i < bank.streams.length; ++i) {
+            const streamDef = bank.streams[i];
             if (!streamDef.mixer) {
                 break;
             }
-            const mixerDef = this.bank.getMixerDefinition(streamDef.mixer);
+            const mixerDef = bank.getMixerDefinition(streamDef.mixer);
             if (!mixerDef) {
                 console.warn("Bank Validation Issue: Stream %s references missing Mixer %s", streamDef.name, streamDef.mixer);
                 valid = false;
             }
         }
         // check parents are valid
-        for (let i = 0; i < this.bank.mixers.length; ++i) {
-            const mixerDef = this.bank.mixers[i];
+        for (let i = 0; i < bank.mixers.length; ++i) {
+            const mixerDef = bank.mixers[i];
             if (!mixerDef.parent) {
                 continue;
             }
-            const parentDef = this.bank.getMixerDefinition(mixerDef.parent);
+            const parentDef = bank.getMixerDefinition(mixerDef.parent);
             if (!parentDef) {
                 console.warn("Bank Validation Issue: Mixer %s references missing parent Mixer %s", mixerDef.name, mixerDef.parent);
                 valid = false;
@@ -436,12 +556,12 @@ class Mixdown {
         this.mixerMap = {};
         this.bank = undefined;
     }
-    loadBank(builder) {
+    loadBank(bank) {
         this.unloadBank();
-        if (!builder.validate()) {
+        if (!BankBuilder.validate(bank)) {
             return { kind: "error", error: LoadBankError.BANK_VALIDATION_FAIL };
         }
-        this.bank = builder.bank;
+        this.bank = bank;
         // first pass instantiate all the mixers
         for (let i = 0; i < this.bank.mixers.length; ++i) {
             const mixerDef = this.bank.mixers[i];
