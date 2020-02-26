@@ -432,6 +432,10 @@ export class Mixer {
         }
     }
 
+    /**
+     * Connects this Mixer to another Mixer instance or an instance of [[Mixdown]].
+     * @param to The [[Mixdown]] or Mixer to connect to.
+     */
     connect(to : Mixer | Mixdown) {
         if (to instanceof Mixdown) {
             to.masterMixer.connect(this);
@@ -441,14 +445,26 @@ export class Mixer {
         this.gainNode.connect(to.gainNode);
     }
 
+    /**
+     * Disconnects this Mixer (and therefore any connected to it).
+     */
     disconnect() {
         this.gainNode.disconnect();
     }
 
+    /**
+     * Set's the gain value for this Mixer.
+     * @param value The gain value to set.
+     */
     gain(value : number) {
         this.gainNode.gain.setValueAtTime(value, this.context.currentTime);
     }
 
+    /**
+     * Start's a fade from the current gain value to a new value over a set time duration
+     * @param value The value to fade to.
+     * @param duration The duration in seconds over which the fade should last.
+     */
     fadeTo(value : number, duration : number) {
         // ramp dislikes stuff in the range of ±1.40130e-45, at least in chrome
         if (value < 1.40130e-45) {
@@ -457,11 +473,18 @@ export class Mixer {
         this.gainNode.gain.exponentialRampToValueAtTime(value, this.context.currentTime + duration);
     }
 
+    /**
+     * Start's a fade to zero over a set duration.
+     * @param duration The duration in seconds over which the fade out should last.
+     */
     fadeOut(duration : number) {
         this.fadeTo(0, duration);
     }
 }
 
+/**
+ * The main class to instance for Mixdown that exposes most of the functionality.
+ */
 export class Mixdown {
     context : AudioContext;
 
@@ -478,6 +501,13 @@ export class Mixdown {
     streams : GenerationalArena<Stream, StreamGenerationHandle>;
     removalFadeDuration : number = 0.2;
 
+    /**
+     * Creates an instance of Mixdown.
+     * @param maxSounds The maximum number of concurrent sounds to play.
+     * @param maxStreams The maximum number of concurrent streamed sounds to play.
+     * @param slopSize The number of sounds from maximum the system will actively try to remove
+     *  lower priority sounds. Currently only for Sounds rather than Streams.
+     */
     constructor(maxSounds : number = 32, maxStreams = 2, slopSize : number = 4) {
         // hack: use of any as a fix for safari having old names
         const audioContextConstructor = window.AudioContext ?? (window as any).webkitAudioContext;
@@ -500,7 +530,13 @@ export class Mixdown {
         this.streams = new GenerationalArena(maxStreams, StreamGenerationHandle);
     }
 
-    loadAsset(name : string, path : string) : Promise<boolean> {
+    /**
+     * Load an Asset from a URL. Currently does no explicit checking that the file type is supported.
+     * @param name A string identifier to later refer to this asset by.
+     * @param url The URL from which to fetch the asset.
+     * @returns A Promise that will return true when the asset is loaded or false if it fails.
+     */
+    loadAsset(name : string, url : string) : Promise<boolean> {
         // todo: make sure we're loading a format the browser supports
         // todo: xmlhttprequest for backwards compat?
 
@@ -510,7 +546,7 @@ export class Mixdown {
         }); }
 
         return new Promise((resolve, reject) => {
-            fetch(path)
+            fetch(url)
             .then(response => response.arrayBuffer())
             .then(data => decodeAudioData(data))
             .then(buffer => {
@@ -524,6 +560,9 @@ export class Mixdown {
         });
     }
 
+    /**
+     * Stops all active sounds and streams then unloads the currently loaded [[Bank]].
+     */
     unloadBank () {
         if (!this.bank) {
             return;
@@ -542,6 +581,12 @@ export class Mixdown {
         this.bank = undefined;
     }
 
+    /**
+     * Loads a [[Bank]] into Mixdown. If a [[Bank]] is already loaded will unload it first.
+     * @param bank The [[Bank]] to load. Create one with a [[BankBuilder]].
+     * @returns A [[Result]] that for success will return a Promise waiting for all referenced assets
+     * to be loaded and a [[LoadBankError]] if it fails.
+     */
     loadBank (bank : Bank) : Result<Promise<boolean[]>, LoadBankError> {
         this.unloadBank();
 
@@ -582,6 +627,9 @@ export class Mixdown {
         return {kind: "value", value: Promise.all(assetPromises)};
     }
 
+    /**
+     * Suspends Mixdown, stopping all sounds and suspending the underlying AudioContext.
+     */
     suspend() {
         if (this.context.state === "suspended") {
             return;
@@ -592,6 +640,9 @@ export class Mixdown {
         this.context.suspend();
     }
 
+    /**
+     * Resumes Mixdown, this should be called with first user interaction to unlock the underlying AudioContext.
+     */
     resume() {
         if (this.context.state === "running") {
             return;
@@ -600,6 +651,11 @@ export class Mixdown {
         this.context.resume();
     }
 
+    /**
+     * Adds a [[Mixer]] to Mixdown.
+     * @param mixer The [[Mixer]] to add.
+     * @returns True if the [[Mixer]] was added and false if it was not.
+     */
     addMixer(mixer : Mixer) : boolean {
         if (mixer.context !== this.context) {
             return false;
@@ -617,18 +673,41 @@ export class Mixdown {
         return true;
     }
 
+    /**
+     * Get's a [[Mixer]] by it's string identifier.
+     * @param name The name of the Mixer.
+     * @returns An [[Optional]] value containing the Mixer.
+     */
     getMixer(name : string) : Optional<Mixer> {
         return this.mixerMap[name];
     }
 
+    /**
+     * Get's a [[SoundDefinition]] by it's string identifier.
+     * @param name The name of the SoundDefinition.
+     * @returns An [[Optional]] value containing the SoundDefinition.
+     */
     getSoundDef(name : string) : Optional<SoundDefinition> {
         return this.bank?.getSoundDefinition(name);
     }
 
+    /**
+     * Get's a [[StreamDefinition]] by it's string identifier.
+     * @param name The name of the StreamDefinition.
+     * @returns An [[Optional]] value containing the StreamDefinition.
+     */
     getStreamDef(name : string) : Optional<StreamDefinition> {
         return this.bank?.getStreamDefinition(name);
     }
 
+    /**
+     * Plays a sound or stream by name.
+     * @param name The name of the sound or stream to play.
+     * @param optionalMixer An optional [[Mixer]] name for this sound to be played under. This overrides 
+     * the settings in the [[SoundDefinition]] or [[StreamDefinition]].
+     * @returns An [[Optional]] containing either a [[VoiceGenerationHandle]] if a sound was played or 
+     * [[StreamGenerationHandle]] if a stream was played.
+     */
     play(name : string, optionalMixer? : string) : Optional<VoiceGenerationHandle | StreamGenerationHandle> {
         let playable : Playable | undefined = this.getSoundDef(name);
         if (playable) {
@@ -643,6 +722,13 @@ export class Mixdown {
         return this.playStreamDef(playable, optionalMixer);
     }
 
+    /**
+     * Plays a sound by name.
+     * @param name The name of the sound to play.
+     * @param optionalMixer An optional [[Mixer]] name for this sound to be played under. This overrides 
+     * the settings in the [[SoundDefinition]].
+     * @returns An [[Optional]] containing a [[VoiceGenerationHandle]].
+     */    
     playSound(name : string, optionalMixer? : string) : Optional<VoiceGenerationHandle> {
         const soundDef = this.getSoundDef(name);
         if (!soundDef) {
@@ -651,6 +737,13 @@ export class Mixdown {
         return this.playSoundDef(soundDef, optionalMixer);
     }
 
+    /**
+     * Plays a stream by name.
+     * @param name The name of the stream to play.
+     * @param optionalMixer An optional [[Mixer]] name for this sound to be played under. This overrides 
+     * the settings in the [[StreamDefinition]].
+     * @returns An [[Optional]] containing a [[StreamGenerationHandle]].
+     */
     playStream(name : string, optionalMixer? : string) : Optional<StreamGenerationHandle> {
         const streamDef = this.getStreamDef(name);
         if (!streamDef) {
@@ -659,6 +752,11 @@ export class Mixdown {
         return this.playStreamDef(streamDef, optionalMixer);
     }
 
+    /**
+     * Plays a [[Playable]].
+     * @param playable The [[Playable]] to play.
+     * @param optionalMixer An optional [[Mixer]] to play the [[Playable]] through overriding the settings it has.
+     */
     playPlayable(playable : Playable, optionalMixer? : string) : Optional<VoiceGenerationHandle | StreamGenerationHandle> {
         switch (playable.kind) {
             case "sound":
@@ -668,6 +766,12 @@ export class Mixdown {
         }
     }
 
+    /**
+     * Plays a [[SoundDefinition]]. If the number of free slots is less than the current maximum less the slop size will
+     * attempt to evict the first lowest priority sound it finds.
+     * @param playable The [[SoundDefinition]] to play.
+     * @param optionalMixer An optional [[Mixer]] to play the [[SoundDefinition]] through overriding the settings it has.
+     */
     playSoundDef(sound : SoundDefinition, optionalMixer? : string) : Optional<VoiceGenerationHandle> {
         const buffer = this.assetMap[sound.asset];
         
@@ -741,6 +845,11 @@ export class Mixdown {
         return voiceHandle;
     }
 
+    /**
+     * Plays a [[StreamDefinition]].
+     * @param playable The [[StreamDefinition]] to play.
+     * @param optionalMixer An optional [[Mixer]] to play the [[StreamDefinition]] through overriding the settings it has.
+     */
     playStreamDef(stream : StreamDefinition, optionalMixer? : string) : Optional<StreamGenerationHandle> {
         if (this.streams.numFreeSlots() === 0) {
             console.warn("mixdown had no free stream slots to play a stream " + stream.name);
@@ -792,6 +901,9 @@ export class Mixdown {
         return streamHandle;
     }
 
+    /**
+     * Stops all currently playing sounds and streams.
+     */
     stopAll() {
         const numVoices = this.voices.data.length;
         for (let i = 0; i < numVoices; ++i) {
@@ -818,6 +930,11 @@ export class Mixdown {
         }
     }
 
+    /**
+     * Stops a currently playing sound or stream by handle.
+     * @param handle The handle to stop.
+     * @returns An [[OperationResult]].
+     */
     stop(handle : VoiceGenerationHandle | StreamGenerationHandle) : OperationResult {
         if (handle.kind === "voice") {
             return this.stopSound(handle);
@@ -826,6 +943,10 @@ export class Mixdown {
         }
     }
 
+    /**
+     * Stops a currently playing sound.
+     * @param handle The [[VoiceGenerationHandle]] for the playing sound.
+     */
     stopSound(handle : VoiceGenerationHandle) : OperationResult {
         const voice = this.voices.get(handle);
 
@@ -842,6 +963,10 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * Stops a currently playing stream.
+     * @param handle The [[StreamGenerationHandle]] for the playing stream.
+     */
     stopStream(handle : StreamGenerationHandle) : OperationResult {
         const stream = this.streams.get(handle);
 
@@ -859,6 +984,12 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * Start or adjust the loop for a playing sound.
+     * @param handle The handle for the playing sound.
+     * @param start An optional start time in seconds.
+     * @param end An optional end time in seconds.
+     */
     loop(handle : VoiceGenerationHandle, start? : number, end? : number) : OperationResult {
         let element = this.voices.get(handle);
 
@@ -878,6 +1009,10 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * Stop a playing sound from looping.
+     * @param handle The handle to the playing sound.
+     */
     stopLoop(handle : VoiceGenerationHandle) : OperationResult {
         let element = this.voices.get(handle);
 
@@ -892,6 +1027,12 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * Fades a playing sound or streams gain value from the current value to a new one over a specified duration.
+     * @param handle The handle to the sound or stream.
+     * @param value The new value to fade to.
+     * @param duration The duration in seconds over which to fade.
+     */
     fadeTo(handle : VoiceGenerationHandle | StreamGenerationHandle, value : number, duration : number) : OperationResult {
         let element = this.getElement(handle);
 
@@ -908,10 +1049,21 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * Fades a playing sound or streams gain value from the current value to zero over a specified duration.
+     * @param handle The handle to the sound or stream.
+     * @param duration The duration in seconds over which to fade.
+     */
     fadeOut(handle : VoiceGenerationHandle | StreamGenerationHandle, duration : number) : OperationResult {
         return this.fadeTo(handle, 0, duration);
     }
 
+    /**
+     * Fades a playing sound or streams gain value from the current value to zero over a specified duration.
+     * After the fade completes the sound or stream will be removed.
+     * @param handle The handle to the sound or stream.
+     * @param duration The duration in seconds over which to fade.
+     */
     fadeOutAndRemove(handle : VoiceGenerationHandle | StreamGenerationHandle, duration : number) : OperationResult {
         const fadeResult = this.fadeOut(handle, duration);
 
@@ -929,6 +1081,11 @@ export class Mixdown {
         return fadeResult;
     }
 
+    /**
+     * Immediately set the gain on a playing sound or stream.
+     * @param handle The handle to the playing sound or stream.
+     * @param value The gain value to set.
+     */
     gain(handle : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
         let element = this.getElement(handle);
 
@@ -940,6 +1097,11 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * Immediately set the balance of a playing sound or stream.
+     * @param handle A handle to the playing sound or stream.
+     * @param value The balance value to set.
+     */
     balance(handle : VoiceGenerationHandle | StreamGenerationHandle, value : number) : OperationResult {
         let element = this.getElement(handle);
 
@@ -951,14 +1113,25 @@ export class Mixdown {
         return OperationResult.SUCCESS;
     }
 
+    /**
+     * The current number of free slots.
+     */
     numFreeSlots() : number {
         return this.voices.numFreeSlots() - this.streams.numUsedSlots();
     }
 
+    /**
+     * Gives access to the AudioBuffer of an asset. This should be treated as ephemeral and not retained.
+     * @param assetName The asset name to retrieve.
+     */
     getBuffer(assetName : string) : AudioBuffer | undefined {
         return this.assetMap[assetName];
     }
 
+    /**
+     * Returns true if a sound or stream is currently playing.
+     * @param handle The handle to the sound or stream.
+     */
     isPlaying(handle : VoiceGenerationHandle | StreamGenerationHandle) : boolean {
         let element = this.getElement(handle);
         return element !== undefined;
