@@ -19,3 +19,24 @@ For a JavaScript project right now I recommend you grab one of the packaged vers
 For a TypeScript project I like to bring the actual source over from the /src directory.
 
 Then it's a simple case of instantiating the Mixdown class and going to town. There are examples and fairly comprehensive documentation to help you get started.
+
+## License Info
+Mixdown is released under the MIT License.
+
+The audio used for examples is licensed variously:
+
+CC BY 3.0 - https://creativecommons.org/licenses/by/3.0/
+
+swoosh.mp3 - Public Domain
+machinegun.mp3 - CC BY 3.0 - soundscalpel.com - https://freesound.org/s/110622/
+footsteps.mp3 - Public Domain
+moo.mp3 - Public Domain
+oildrum.mp3 - Public Domain
+roomambience.mp3 - Public Domain
+8bitexplosion.mp3 - Public Domain
+grunt.mp3 - Public Domain
+error.mp3 - Public Domain
+click.mp3 - Public Domain
+spaceshipambience.mp3 - Public Domain
+fightmusic.mp3 - CC BY 3.0 - Sirkoto51- https://freesound.org/s/414214/
+sadmusic.mp3 - CC BY 3.0 - Mrthenoronha - https://freesound.org/s/380020/
