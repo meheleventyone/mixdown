@@ -4,7 +4,7 @@ let mixdown = new Mixdown();
 
 function unlock() {
     mixdown.resume();
-    mixdown.playStreamDef({kind: "stream", name:"fightmusic", source:"../assets/fightmusic.mp3", gain: 1});
+    mixdown.playStreamDef({kind: "stream", name:"fightmusic", source:"./assets/fightmusic.mp3", gain: 1});
 }
 
 const button = document.getElementById("playmusic");

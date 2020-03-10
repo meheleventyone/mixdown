@@ -9,21 +9,21 @@ builder.createMixerDefinition("sfx", 1);
 builder.createMixerDefinition("music", 1);
 builder.createMixerDefinition("ambience", 1, "sfx");
 
-builder.createAssetDefinition("8bitexplosion", "../assets/8bitexplosion.mp3");
-builder.createAssetDefinition("click", "../assets/click.mp3");
-builder.createAssetDefinition("error", "../assets/error.mp3");
-builder.createAssetDefinition("footsteps", "../assets/footsteps.mp3");
-builder.createAssetDefinition("grunt", "../assets/grunt.mp3");
-builder.createAssetDefinition("machinegun", "../assets/machine-gun.mp3");
-builder.createAssetDefinition("moo", "../assets/moo.mp3");
-builder.createAssetDefinition("oildrum", "../assets/oildrum.mp3");
-builder.createAssetDefinition("swing", "../assets/swing.mp3");
+builder.createAssetDefinition("8bitexplosion", "./assets/8bitexplosion.mp3");
+builder.createAssetDefinition("click", "./assets/click.mp3");
+builder.createAssetDefinition("error", "./assets/error.mp3");
+builder.createAssetDefinition("footsteps", "./assets/footsteps.mp3");
+builder.createAssetDefinition("grunt", "./assets/grunt.mp3");
+builder.createAssetDefinition("machinegun", "./assets/machine-gun.mp3");
+builder.createAssetDefinition("moo", "./assets/moo.mp3");
+builder.createAssetDefinition("oildrum", "./assets/oildrum.mp3");
+builder.createAssetDefinition("swing", "./assets/swing.mp3");
 
-builder.createStreamDefinition("fight", "../assets/fightmusic.mp3", 1, "music");
-builder.createStreamDefinition("sad", "../assets/sadmusic.mp3", 1, "music");
+builder.createStreamDefinition("fight", "./assets/fightmusic.mp3", 1, "music");
+builder.createStreamDefinition("sad", "./assets/sadmusic.mp3", 1, "music");
 
-builder.createStreamDefinition("room", "../assets/roomambience.mp3", 1, "ambience");
-builder.createStreamDefinition("spaceship", "../assets/spaceshipambience.mp3", 1, "ambience");
+builder.createStreamDefinition("room", "./assets/roomambience.mp3", 1, "ambience");
+builder.createStreamDefinition("spaceship", "./assets/spaceshipambience.mp3", 1, "ambience");
 
 builder.createSoundDefinition("8bitexplosion", Priority.High, "8bitexplosion", 1, undefined, undefined, "sfx");
 builder.createSoundDefinition("footsteps", Priority.High, "footsteps", 1, undefined, undefined, "sfx");

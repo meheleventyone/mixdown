@@ -1,7 +1,7 @@
 import { Mixdown, Priority } from "../dist/mixdown.module.js";
 var mixdown = new Mixdown();
 var initialized = false;
-mixdown.loadAsset("moo", "../assets/moo.mp3").then(function (result) { return initialized = result; });
+mixdown.loadAsset("moo", "./assets/moo.mp3").then(function (result) { return initialized = result; });
 ;
 function unlock() {
     if (!initialized) {

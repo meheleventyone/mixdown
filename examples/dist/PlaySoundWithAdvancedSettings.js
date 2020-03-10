@@ -107,7 +107,7 @@ if (fadeDurationSlider) {
 var mixdown = new Mixdown();
 var initialized = false;
 var buffer = undefined;
-mixdown.loadAsset("moo", "../assets/moo.mp3").then(function (result) {
+mixdown.loadAsset("moo", "./assets/moo.mp3").then(function (result) {
     initialized = result;
     buffer = mixdown.getBuffer("moo");
     if (!buffer) {

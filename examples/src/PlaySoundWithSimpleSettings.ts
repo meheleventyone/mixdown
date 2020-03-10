@@ -1,7 +1,7 @@
 import {Mixdown, Priority} from "../dist/mixdown.module.js"
 
 let mixdown = new Mixdown();
-mixdown.loadAsset("moo", "../assets/moo.mp3").then(result => initialized = result);
+mixdown.loadAsset("moo", "./assets/moo.mp3").then(result => initialized = result);
 
 let gain = 1;
 let initialized = false;

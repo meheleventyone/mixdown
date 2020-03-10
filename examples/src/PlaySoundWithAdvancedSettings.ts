@@ -135,7 +135,7 @@ let mixdown = new Mixdown();
 let initialized = false;
 let buffer : AudioBuffer | undefined = undefined;
 
-mixdown.loadAsset("moo", "../assets/moo.mp3").then(result => {
+mixdown.loadAsset("moo", "./assets/moo.mp3").then(result => {
     initialized = result;
     buffer = mixdown.getBuffer("moo");
     if (!buffer) {
