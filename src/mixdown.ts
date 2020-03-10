@@ -1,5 +1,5 @@
 /**
- * A Web Audio based mixer for games.
+ * A declarative audio mixer for games. 
  * @packageDocumentation
  */
 

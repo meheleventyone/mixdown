@@ -14,7 +14,7 @@
     "clean": "rm -rf dist",
     "cleandocs": "rm -rf docs",
     "build": "npm run clean && rollup --config",
-    "docs": "npm run cleandocs && typedoc --out docs src"
+    "docs": "npm run cleandocs && typedoc --theme minimal --out docs src"
   },
   "repository": {
     "type": "git",
@@ -28,10 +28,10 @@
   },
   "homepage": "https://github.com/meheleventyone/mixdown#readme",
   "devDependencies": {
-    "rollup": "^1.26.3",
-    "rollup-plugin-dts": "^1.1.12",
+    "rollup": "^1.32.1",
+    "rollup-plugin-dts": "^1.2.1",
     "rollup-plugin-typescript2": "^0.24.3",
     "ts-loader": "^6.2.1",
-    "typescript": "^3.7.2"
+    "typescript": "^3.8.3"
   }
 }
