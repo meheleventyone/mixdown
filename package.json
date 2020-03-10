@@ -12,9 +12,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf dist",
-    "cleandocs": "rm -rf docs",
+    "cleandocs": "rm -rf docs/api",
     "build": "npm run clean && rollup --config",
-    "docs": "npm run cleandocs && typedoc --theme minimal --out docs src"
+    "docs": "npm run cleandocs && typedoc --theme minimal --out docs/api src"
   },
   "repository": {
     "type": "git",

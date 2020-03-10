@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head><title>mixdown example - sound board</title></head>
+    <body>
+        <script type="module" src="./dist/SoundBoard.js"></script>
+        <p>SFX:</p>
+        <button id="8bitexplosion">Explosion</button>
+        <button id="footsteps">Footsteps</button>
+        <button id="machinegun">Machinegun</button>
+        <button id="swing">Sword Swing</button>
+        <button id="moo">Moo!</button>
+        <button id="oildrum">Clang</button>
+        <button id="grunt">Uhhn</button>
+        <button id="click">Click</button>
+        <button id="error">Error</button>
+        <p>Music:</p>
+        <button id="fight">Fight!</button>
+        <button id="sad">Sadness</button>
+        <button id="stopmusic">Stop</button>
+        <p>Ambience:</p>
+        <button id="spaceship">Spaceship</button>
+        <button id="room">Room</button>
+        <button id="stopambience">Stop</button>
+        <p>Mixers:</p>
+        <div>
+            <input type="range" id="master" min="0" max="1" value="1" step="0.01">
+            <label for="master">master</label>
+        </div>
+        <div>
+            <input type="range" id="sfx" min="0" max="1" value="1" step="0.01">
+            <label for="sfx">sfx</label>
+        </div>
+        <div>
+            <input type="range" id="music" min="0" max="1" value="1" step="0.01">
+            <label for="music">music</label>
+        </div>
+        <div>
+            <input type="range" id="ambience" min="0" max="1" value="1" step="0.01">
+            <label for="ambience">ambience</label>
+        </div>
+    </body>
+</html>
