@@ -1,9 +1,9 @@
 # mixdown
 Mixdown is a declarative audio mixer for games. It allows banks of sounds to be pre-defined in detail, loaded, manipulated and played with an intuitive interface. It's written in TypeScript and uses the WebAudio API to power playback.
 
-**_Note: Mixdown is currently in an alpha state of development. There may be dragons if you choose to use it for production work and the API may change between versions._**
+**_Note: Mixdown is currently in an alpha state of development. I'm currently dogfooding it by using it in my own games. I wouldn't recommend you choose to use it for production work and the API may change quite a bit between versions whilst I erase my own mistakes._**
 
-If you're interested in diving right in please take a look at the examples and documentation.
+If you're interested in diving right in please take a look at the [examples](https://meheleventyone.github.io/mixdown/examples/) and [documentation](https://meheleventyone.github.io/mixdown/api/).
 
 **Key Features**
 * *Sound playback is declarative defined*, allowing easy management of all the sounds in the game. No more digging through files to find all instances of a sound being played.
@@ -18,7 +18,7 @@ For a JavaScript project right now I recommend you grab one of the packaged vers
 
 For a TypeScript project I like to bring the actual source over from the /src directory.
 
-Then it's a simple case of instantiating the Mixdown class and going to town. There are examples and fairly comprehensive documentation to help you get started.
+Then it's a simple case of instantiating the Mixdown class and going to town. There are [examples](https://meheleventyone.github.io/mixdown/examples/) and fairly comprehensive [documentation](https://meheleventyone.github.io/mixdown/api/) to help you get started.
 
 ## License Info
 Mixdown is released under the MIT License.
