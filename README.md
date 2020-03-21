@@ -20,6 +20,11 @@ For a TypeScript project I like to bring the actual source over from the /src di
 
 Then it's a simple case of instantiating the Mixdown class and going to town. There are [examples](https://meheleventyone.github.io/mixdown/examples/) and fairly comprehensive [documentation](https://meheleventyone.github.io/mixdown/api/) to help you get started.
 
+## Contributing
+Contributions are always welcome. In particular bug fixes, reports and suggests for feature enhancements would be excellent.
+
+If you wish to undertake a large refactor or add a feature I'd appreciate an issue being opened before work begins so we can hash out the details.
+
 ## License Info
 Mixdown is released under the MIT License.
 
